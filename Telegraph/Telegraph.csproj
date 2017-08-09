@@ -113,18 +113,10 @@
       <DependentUpon>SplashWnd.xaml</DependentUpon>
     </Compile>
     <Compile Include="Telegram.cs" />
-    <Compile Include="TelegramWnd.xaml.cs">
-      <DependentUpon>TelegramWnd.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="UrgencyConverter.cs" />
     <Compile Include="User.cs" />
     <Compile Include="ViewModel\MainViewModel.cs" />
     <Compile Include="ViewModel\ViewModelLocator.cs" />
     <Page Include="SplashWnd.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="TelegramWnd.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
