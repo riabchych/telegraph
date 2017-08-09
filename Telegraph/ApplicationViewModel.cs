@@ -83,12 +83,10 @@ namespace Telegraph
 
                       foreach (string filePath in files)
                       {
-
                           reader = new FilterReader(filePath);
 
                           using (reader)
                           {
-
                               string docText = null;
                               docText = reader.ReadToEnd();
 
@@ -107,31 +105,40 @@ namespace Telegraph
                               try
                               {
                                   if (number < 1)
-                                      throw new Exception("Не удалось извлечь номер телеграммы.");
+                                      throw new Exception("Не удалось извлечь некоторую информацию.");
                                   if (to == "")
-                                      throw new Exception("Не удалось извлечь строку адресата.");
+                                      throw new Exception("Не удалось извлечь некоторую информацию.");
                                   if (text == "")
-                                      throw new Exception("Не удалось извлечь текст телеграммы.");
+                                      throw new Exception("Не удалось извлечь некоторую информацию.");
                                   if (subNum == "")
-                                      throw new Exception("Не удалось извлечь подписной номер телеграммы.");
+                                      throw new Exception("Не удалось извлечь некоторую информацию.");
                                   if (date == "")
-                                      throw new Exception("Не удалось извлечь дату телеграммы.");
+                                      throw new Exception("Не удалось извлечь некоторую информацию.");
 
                                   Telegram tlg = new Telegram()
                                   {
                                       Number = number,
-                                      From = to,
+                                      To = to,
                                       Text = text,
                                       Subnum = subNum,
                                       Date = date,
-                                      Urgency = urgency
+                                      Urgency = urgency,
                                   };
 
-                                  db.Telegrams.Add(tlg);
+                                  //TelegramViewModel vm = new TelegramViewModel();
+                                  TelegramWnd telegramWnd = new TelegramWnd(tlg);
+                                  if (telegramWnd.ShowDialog() == true)
+                                  {
+                                      telegramWnd.Telegram = tlg;
+
+                                      db.Telegrams.Add(tlg);
+                                  }
+
+                                  
                               }
-                              catch (Exception ex)
+                              catch (Exception err)
                               {
-                                  MessageBox.Show(ex.Message);
+                                  MessageBox.Show(err.Message);
                               }
 
                               /*using (StreamWriter sw = new StreamWriter(wordDoc.MainDocumentPart.GetStream(FileMode.Create)))
@@ -145,10 +152,55 @@ namespace Telegraph
             }
         }
 
+        // команда редактирования
+        public RelayCommand EditCommand
+        {
+            get
+            {
+                return editCommand ??
+                  (editCommand = new RelayCommand((selectedItem) =>
+                  {
+                      if (selectedItem == null) return;
+                      // получаем выделенный объект
+                      Telegram telegram = selectedItem as Telegram;
+
+                      Telegram tlg = new Telegram()
+                      {
+                          id = telegram.id,
+                          Number = telegram.Number,
+                          To = telegram.To,
+                          Text = telegram.Text,
+                          Subnum = telegram.Subnum,
+                          Date = telegram.Date,
+                          Urgency = telegram.Urgency,
+                      };
+                      TelegramWnd telegramWindow = new TelegramWnd(tlg);
+
+
+                      if (telegramWindow.ShowDialog() == true)
+                      {
+                          // получаем измененный объект
+                          telegram = db.Telegrams.Find(telegramWindow.Telegram.id);
+                          if (telegram != null)
+                          {
+                              telegram.Number = telegramWindow.Telegram.Number;
+                              telegram.To = telegramWindow.Telegram.To;
+                              telegram.Text = telegramWindow.Telegram.Text;
+                              telegram.Subnum = telegramWindow.Telegram.Subnum;
+                              telegram.Date = telegramWindow.Telegram.Date;
+                              telegram.Urgency = telegramWindow.Telegram.Urgency;
+
+                              db.Entry(telegram).State = EntityState.Modified;
+                              db.SaveChanges();
+                          }
+                      }
+                  }));
+            }
+        }
+
         public ApplicationContext Db { get => db; set => db = value; }
         public IEnumerable<Telegram> Telegrams { get => telegrams; set => telegrams = value; }
         public Task DbTask { get => dbTask; set => dbTask = value; }
-        public RelayCommand EditCommand { get => editCommand; set => editCommand = value; }
         public RelayCommand DeleteCommand { get => deleteCommand; set => deleteCommand = value; }
 
         public event PropertyChangedEventHandler PropertyChanged;

@@ -7,13 +7,12 @@ namespace Telegraph
     public class Telegram : INotifyPropertyChanged
     {
         private int number;
-        private string from;
         private string to;
         private string text;
         private string subnum;
         private string date;
-        private int executor;
         private int urgency;
+        private int dispatcher;
 
         public int id { get; set; }
 
@@ -24,15 +23,6 @@ namespace Telegraph
             {
                 number = value;
                 OnPropertyChanged("Number");
-            }
-        }
-        public string From
-        {
-            get { return from; }
-            set
-            {
-                from = value;
-                OnPropertyChanged("From");
             }
         }
 
@@ -76,16 +66,6 @@ namespace Telegraph
             }
         }
 
-        public int Executor
-        {
-            get { return executor; }
-            set
-            {
-                executor = value;
-                OnPropertyChanged("Executor");
-            }
-        }
-
         public int Urgency
         {
             get { return urgency; }
@@ -93,6 +73,16 @@ namespace Telegraph
             {
                 urgency = value;
                 OnPropertyChanged("Urgency");
+            }
+        }
+
+        public int Dispatcher
+        {
+            get { return dispatcher; }
+            set
+            {
+                dispatcher = value;
+                OnPropertyChanged("Dispatcher");
             }
         }
 

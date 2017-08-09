@@ -24,16 +24,26 @@
                         <cmd:EventToCommand Command="{Binding AddCommand}"
                             PassEventArgsToCommand="True" />
                     </i:EventTrigger>
+                    <i:EventTrigger EventName="MouseDoubleClick">
+                        <cmd:EventToCommand Command="{Binding EditCommand}" CommandParameter="{Binding ElementName=telegramsList, Path=SelectedItem}" />
+                    </i:EventTrigger>
                 </i:Interaction.Triggers>
 
                 <ListView.View>
                     <GridView>
+                        <GridViewColumn Width="50" Header="ID"  DisplayMemberBinding="{Binding id}"  />
                         <GridViewColumn Width="50" Header="Number"  DisplayMemberBinding="{Binding Number}"  />
-                        <GridViewColumn Width="70" Header="Date" DisplayMemberBinding="{Binding Date}" />
                         <GridViewColumn Width="120" Header="Subnum"  DisplayMemberBinding="{Binding Subnum}" />
+                        <GridViewColumn Width="70" Header="Date" DisplayMemberBinding="{Binding Date}" />
                         <GridViewColumn Width="100" Header="Urgency"  DisplayMemberBinding="{Binding Urgency}" />
                     </GridView>
                 </ListView.View>
+                
+                <ListView.ItemContainerStyle>
+                    <Style TargetType="{x:Type ListViewItem}">
+                        <Setter Property="ToolTip" Value="{Binding Text}"/>
+                    </Style>
+                </ListView.ItemContainerStyle>
             </ListView>
         </Grid>
         
