@@ -3,7 +3,9 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity"
         xmlns:local="clr-namespace:Telegraph"
+        xmlns:cmd="http://www.galasoft.ch/mvvmlight"
         mc:Ignorable="d"
         Title="MainWindow" Height="526" Width="581" AllowDrop="True">
     <Grid>
@@ -15,7 +17,15 @@
             </ToolBar>
         </ToolBarTray>
         <Grid x:Name="rootGrid" Margin="0,40,0,25" VerticalAlignment="Stretch">
-            <ListView DockPanel.Dock="Top" x:Name="telegramsList" ItemsSource="{Binding Telegrams}" VerticalContentAlignment="Center" BorderBrush="Khaki" DragLeave="telegramsList_DragLeave" Drop="telegramsList_Drop" DragEnter="telegramsList_DragEnter">
+            <ListView DockPanel.Dock="Top" x:Name="telegramsList"  ItemsSource="{Binding Telegrams}" VerticalContentAlignment="Center" BorderBrush="Khaki" DragLeave="telegramsList_DragLeave" DragEnter="telegramsList_DragEnter" Drop="telegramsList_Drop">
+
+                <i:Interaction.Triggers>
+                    <i:EventTrigger EventName="Drop">
+                        <cmd:EventToCommand Command="{Binding AddCommand}"
+                            PassEventArgsToCommand="True" />
+                    </i:EventTrigger>
+                </i:Interaction.Triggers>
+
                 <ListView.View>
                     <GridView>
                         <GridViewColumn Width="50" Header="Number"  DisplayMemberBinding="{Binding Number}"  />

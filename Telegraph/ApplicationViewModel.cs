@@ -1,12 +1,32 @@
-﻿using System.Collections.Generic;
+﻿using IFilterTextReader;
+using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data.Entity;
+using System.IO;
 using System.Runtime.CompilerServices;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Windows;
 
 namespace Telegraph
 {
+    struct TlgRegex
+    {
+        private const string number = @".З[\w\W]*.НР[\W]*([0-9]*)[\W]*[\n]";
+        private const string to = @"(КОМАН[ЙЦУКЕНГШЩЗХЇЄЖДЛОРПАВІФЯЧСМИТЬБЮ]+[\w\d\W].*[\n\r])";
+        private const string text = @"КОМАН[ЙЦУКЕНГШЩЗХЇЄЖДЛОРПАВІФЯЧСМИТЬБЮ]+[\w\d\W].*[\n\r].?([ЙЦУКЕНГШЩЗХЇЄЖДЛОРПАВІФЯЧСМИТЬБЮ\w\d\W\n\r]*)НР";
+        private const string urgency = @"[\s\t\d]{10,}....(ТЕРМІНОВ.)";
+        private const string all = @".З[\w\W]*.НР[\W]*([0-9]*)[\W\n\r]*КОМАН[ЙЦУКЕНГШЩЗХЇЄЖДЛОРПАВІФЯЧСМИТЬБЮ\s\/]+([\d\s].*)[\n\r].?([ЙЦУКЕНГШЩЗХЇЄЖДЛОРПАВІФЯЧСМИТЬБЮ\w\d\W\n\r]*)НР\.([\d\/\-]*)[[ЙЦУКЕНГШЩЗХЇЄЖДЛОРПАВІФЯЧСМИТЬБЮ\s\.]*]?([\d\.]+)";
+
+        public static string Number => number;
+        public static string To => to;
+        public static string Text => text;
+        public static string Urgency => urgency;
+        public static string All => all;
+    }
+
     public class ApplicationViewModel : INotifyPropertyChanged
     {
         private ApplicationContext db;
@@ -46,91 +66,90 @@ namespace Telegraph
             });
         }
         // команда добавления
-        /*public RelayCommand AddCommand
+        public RelayCommand AddCommand
         {
             get
             {
                 return addCommand ??
                   (addCommand = new RelayCommand((o) =>
                   {
-                      TelegramWindow telegramWindow = new TelegramWindow(new Telegram());
-                      if (telegramWindow.ShowDialog() == true)
-                      {
-                          Telegram telegram = telegramWindow.Telegram;
-                          db.Telegrams.Add(telegram);
-                          db.SaveChanges();
-                      }
-                  }));
-            }
-        }
-        // команда редактирования
-        public RelayCommand EditCommand
-        {
-            get
-            {
-                return editCommand ??
-                  (editCommand = new RelayCommand((selectedItem) =>
-                  {
-                      if (selectedItem == null) return;
+                      if (o == null) return;
                       // получаем выделенный объект
-                      Telegram telegram = selectedItem as Telegram;
+                      DragEventArgs e = o as DragEventArgs;
 
-                      Telegram vm = new Telegram()
+                      string[] files = (string[])e.Data.GetData(DataFormats.FileDrop);
+                      TextReader reader;
+                      bool isUrgency;
+
+                      foreach (string filePath in files)
                       {
-                          Id = telegram.Id,
-                          Company = telegram.Company,
-                          Price = telegram.Price,
-                          Title = telegram.Title
-                      };
-                      TelegramWindow telegramWindow = new TelegramWindow(vm);
 
+                          reader = new FilterReader(filePath);
 
-                      if (telegramWindow.ShowDialog() == true)
-                      {
-                          // получаем измененный объект
-                          telegram = db.Telegrams.Find(telegramWindow.Telegram.Id);
-                          if (telegram != null)
+                          using (reader)
                           {
-                              telegram.Company = telegramWindow.Telegram.Company;
-                              telegram.Title = telegramWindow.Telegram.Title;
-                              telegram.Price = telegramWindow.Telegram.Price;
-                              db.Entry(telegram).State = EntityState.Modified;
-                              db.SaveChanges();
+
+                              string docText = null;
+                              docText = reader.ReadToEnd();
+
+                              GroupCollection groups = new Regex(TlgRegex.All).Match(docText).Groups;
+                              isUrgency = new Regex(TlgRegex.Urgency).IsMatch(docText);
+
+                              string num = groups[1].Value.Trim().ToString();
+
+                              int number = Int32.Parse((num != "") ? num : "0");
+                              string to = groups[2].Value.Trim();
+                              string text = groups[3].Value.Trim();
+                              string subNum = groups[4].Value.Trim();
+                              string date = groups[5].Value.Trim();
+                              int urgency = isUrgency ? 1 : 0;
+
+                              try
+                              {
+                                  if (number < 1)
+                                      throw new Exception("Не удалось извлечь номер телеграммы.");
+                                  if (to == "")
+                                      throw new Exception("Не удалось извлечь строку адресата.");
+                                  if (text == "")
+                                      throw new Exception("Не удалось извлечь текст телеграммы.");
+                                  if (subNum == "")
+                                      throw new Exception("Не удалось извлечь подписной номер телеграммы.");
+                                  if (date == "")
+                                      throw new Exception("Не удалось извлечь дату телеграммы.");
+
+                                  Telegram tlg = new Telegram()
+                                  {
+                                      Number = number,
+                                      From = to,
+                                      Text = text,
+                                      Subnum = subNum,
+                                      Date = date,
+                                      Urgency = urgency
+                                  };
+
+                                  db.Telegrams.Add(tlg);
+                              }
+                              catch (Exception ex)
+                              {
+                                  MessageBox.Show(ex.Message);
+                              }
+
+                              /*using (StreamWriter sw = new StreamWriter(wordDoc.MainDocumentPart.GetStream(FileMode.Create)))
+                              {
+                                  sw.Write(docText);
+                              }*/
                           }
                       }
-                  }));
-            }
-        }*/
-        // команда удаления
-        public RelayCommand DeleteCommand
-        {
-            get
-            {
-                return deleteCommand ??
-                  (deleteCommand = new RelayCommand((selectedItem) =>
-                  {
-                      if (selectedItem == null) return;
-                      // получаем выделенный объект
-                      Telegram telegram = selectedItem as Telegram;
-                      Db.Telegrams.Remove(telegram);
-                      Db.SaveChanges();
+                      db.SaveChanges();
                   }));
             }
         }
 
         public ApplicationContext Db { get => db; set => db = value; }
-
-        public IEnumerable<Telegram> Telegrams
-        {
-            get { return telegrams; }
-            set
-            {
-                telegrams = value;
-                OnPropertyChanged("Telegrams");
-            }
-        }
-
+        public IEnumerable<Telegram> Telegrams { get => telegrams; set => telegrams = value; }
         public Task DbTask { get => dbTask; set => dbTask = value; }
+        public RelayCommand EditCommand { get => editCommand; set => editCommand = value; }
+        public RelayCommand DeleteCommand { get => deleteCommand; set => deleteCommand = value; }
 
         public event PropertyChangedEventHandler PropertyChanged;
         public void OnPropertyChanged([CallerMemberName]string prop = "")

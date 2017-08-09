@@ -1,4 +1,5 @@
-﻿using System.ComponentModel;
+﻿using System;
+using System.ComponentModel;
 using System.Runtime.CompilerServices;
 
 namespace Telegraph
@@ -12,9 +13,9 @@ namespace Telegraph
         private string subnum;
         private string date;
         private int executor;
-        private string urgency;
+        private int urgency;
 
-        public int Id { get; set; }
+        public int id { get; set; }
 
         public int Number
         {
@@ -85,7 +86,7 @@ namespace Telegraph
             }
         }
 
-        public string Urgency
+        public int Urgency
         {
             get { return urgency; }
             set
