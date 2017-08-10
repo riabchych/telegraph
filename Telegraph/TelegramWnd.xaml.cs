@@ -21,6 +21,7 @@ namespace Telegraph
     {
         public Telegram Telegram { get; set; }
 
+        
         public TelegramWnd(Telegram t)
         {
             InitializeComponent();

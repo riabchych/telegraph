@@ -31,7 +31,9 @@ namespace Telegraph
     {
         private ApplicationContext db;
         private IEnumerable<Telegram> telegrams;
+        private IEnumerable<User> Users;
         private Task dbTask;
+        private bool isUrgency;
 
         RelayCommand addCommand;
         RelayCommand editCommand;
@@ -54,10 +56,12 @@ namespace Telegraph
             DbTask = Task.Factory.StartNew(async () =>
             {
                 Db.Telegrams.Load();
+                Db.Users.Load();
 
                 if (await Task.WhenAny(DbTask, Task.Delay(1000 * 60)) == DbTask)
                 {
                     Telegrams = Db.Telegrams.Local.ToBindingList();
+                    Users = Db.Users.Local.ToBindingList();
                     if (context != null && callback != null)
                     {
                         context.Send(callback, null);
@@ -115,6 +119,8 @@ namespace Telegraph
                                   if (date == "")
                                       throw new Exception("Не удалось извлечь некоторую информацию.");
 
+                                  IsUrgency = urgency > 0 ? true : false;
+
                                   Telegram tlg = new Telegram()
                                   {
                                       Number = number,
@@ -123,6 +129,7 @@ namespace Telegraph
                                       Subnum = subNum,
                                       Date = date,
                                       Urgency = urgency,
+                                      Dispatcher = ""
                                   };
 
                                   //TelegramViewModel vm = new TelegramViewModel();
@@ -173,7 +180,12 @@ namespace Telegraph
                           Subnum = telegram.Subnum,
                           Date = telegram.Date,
                           Urgency = telegram.Urgency,
+                          Dispatcher = telegram.Dispatcher,
                       };
+
+                      int urgency = isUrgency ? 1 : 0;
+                      IsUrgency = urgency > 0 ? true : false;
+
                       TelegramWnd telegramWindow = new TelegramWnd(tlg);
 
 
@@ -189,6 +201,7 @@ namespace Telegraph
                               telegram.Subnum = telegramWindow.Telegram.Subnum;
                               telegram.Date = telegramWindow.Telegram.Date;
                               telegram.Urgency = telegramWindow.Telegram.Urgency;
+                              telegram.Dispatcher = telegramWindow.Telegram.Dispatcher;
 
                               db.Entry(telegram).State = EntityState.Modified;
                               db.SaveChanges();
@@ -202,6 +215,8 @@ namespace Telegraph
         public IEnumerable<Telegram> Telegrams { get => telegrams; set => telegrams = value; }
         public Task DbTask { get => dbTask; set => dbTask = value; }
         public RelayCommand DeleteCommand { get => deleteCommand; set => deleteCommand = value; }
+        public bool IsUrgency { get => isUrgency; set => isUrgency = value; }
+        public IEnumerable<User> Users1 { get => Users; set => Users = value; }
 
         public event PropertyChangedEventHandler PropertyChanged;
         public void OnPropertyChanged([CallerMemberName]string prop = "")

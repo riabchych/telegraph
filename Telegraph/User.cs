@@ -1,4 +1,5 @@
-﻿using System.ComponentModel;
+﻿using System;
+using System.ComponentModel;
 using System.Runtime.CompilerServices;
 
 namespace Telegraph
@@ -9,6 +10,12 @@ namespace Telegraph
         private string rank;
 
         public string Id { get; set; }
+
+        public User()
+        {
+            Id = Guid.NewGuid().ToString();
+        }
+
 
         public string Name
         {

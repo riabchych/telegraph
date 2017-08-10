@@ -4,6 +4,7 @@ using System.Runtime.CompilerServices;
 
 namespace Telegraph
 {
+
     public class Telegram : INotifyPropertyChanged
     {
         private int number;
@@ -12,7 +13,7 @@ namespace Telegraph
         private string subnum;
         private string date;
         private int urgency;
-        private int dispatcher;
+        private string dispatcher;
 
         public int id { get; set; }
 
@@ -76,7 +77,7 @@ namespace Telegraph
             }
         }
 
-        public int Dispatcher
+        public string Dispatcher
         {
             get { return dispatcher; }
             set

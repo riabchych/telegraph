@@ -7,13 +7,13 @@
         xmlns:local="clr-namespace:Telegraph"
         xmlns:cmd="http://www.galasoft.ch/mvvmlight"
         mc:Ignorable="d"
-        Title="MainWindow" Height="526" Width="581" AllowDrop="True">
+        Title="Центр керування телеграмами" Height="526" Width="581" AllowDrop="True">
     <Grid>
         <ToolBarTray VerticalAlignment="Top" Height="40">
             <ToolBar Height="40">
-                <Button Content="Add" />
-                <Button Content="Edit" />
-                <Button Content="Delete" />
+                <Button Content="Додати" Width="85" />
+                <Button Content="Редагувати"  Width="85" />
+                <Button Content="Видалити"  Width="85" />
             </ToolBar>
         </ToolBarTray>
         <Grid x:Name="rootGrid" Margin="0,40,0,25" VerticalAlignment="Stretch">
@@ -31,18 +31,26 @@
 
                 <ListView.View>
                     <GridView>
-                        <GridViewColumn Width="50" Header="ID"  DisplayMemberBinding="{Binding id}"  />
-                        <GridViewColumn Width="50" Header="Number"  DisplayMemberBinding="{Binding Number}"  />
-                        <GridViewColumn Width="120" Header="Subnum"  DisplayMemberBinding="{Binding Subnum}" />
-                        <GridViewColumn Width="70" Header="Date" DisplayMemberBinding="{Binding Date}" />
-                        <GridViewColumn Width="100" Header="Urgency"  DisplayMemberBinding="{Binding Urgency}" />
+                        <GridViewColumn Width="50" Header="ID" DisplayMemberBinding="{Binding id}"  />
+                        <GridViewColumn Width="75" Header="Номер"  DisplayMemberBinding="{Binding Number}"  />
+                        <GridViewColumn Width="120" Header="Підписний"  DisplayMemberBinding="{Binding Subnum}" />
+                        <GridViewColumn Width="70" Header="Дата" DisplayMemberBinding="{Binding Date}" />
+                        <GridViewColumn Width="100" Header="Терміновість"  DisplayMemberBinding="{Binding Urgency}" />
+                        <GridViewColumn Width="150" Header="Еспедитор"  DisplayMemberBinding="{Binding Dispatcher}" />
                     </GridView>
                 </ListView.View>
-                
+
+                <ListView.Resources>
+                <Style TargetType="{x:Type GridViewColumnHeader}">
+                    <Setter Property="HorizontalContentAlignment" Value="Left" />
+                </Style>
+                </ListView.Resources>
                 <ListView.ItemContainerStyle>
                     <Style TargetType="{x:Type ListViewItem}">
                         <Setter Property="ToolTip" Value="{Binding Text}"/>
+                        <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
                     </Style>
+
                 </ListView.ItemContainerStyle>
             </ListView>
         </Grid>
