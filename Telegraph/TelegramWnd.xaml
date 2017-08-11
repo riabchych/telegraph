@@ -6,7 +6,7 @@
         xmlns:local="clr-namespace:Telegraph"
         xmlns:Properties="clr-namespace:Telegraph.Properties" x:Class="Telegraph.TelegramWnd"
         mc:Ignorable="d"
-        Title="Телеграма" Height="440" Width="560" MinWidth="560" MinHeight="440">
+        Title="Телеграма" Height="640.15" Width="560" MinWidth="560" MinHeight="440">
     <Window.Resources>
         <local:UrgencyConverter x:Key="urgencyConverterKey" />
 
@@ -28,11 +28,17 @@
             <RowDefinition  />
             <RowDefinition Height="37" />
             <RowDefinition Height="37" />
-            <RowDefinition Height="38" />
+            <RowDefinition Height="37" />
+            <RowDefinition Height="37" />
+            <RowDefinition Height="37" />
+            <RowDefinition Height="37" />
+            <RowDefinition Height="37" />
+            <RowDefinition Height="37" />
+            <RowDefinition Height="37" />
             <RowDefinition Height="37" />
         </Grid.RowDefinitions>
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="91" />
+            <ColumnDefinition Width="100" />
             <ColumnDefinition />
         </Grid.ColumnDefinitions>
         <TextBlock Text="Терміновість" />
@@ -40,8 +46,14 @@
         <TextBlock Text="Кому" Grid.Row="2" />
         <TextBlock Text="Текст" Grid.Row="3" />
         <TextBlock Text="Підписний" Grid.Row="4" />
-        <TextBlock Text="Дата" Grid.Row="5" />
-        <TextBlock Text="Експедитор" Grid.Row="6" />
+        <TextBlock Text="Посада відпр." Grid.Row="5" TextWrapping="Wrap" />
+        <TextBlock Text="Звання відпр." Grid.Row="6" TextWrapping="Wrap" />
+        <TextBlock Text="Ім'я відпр." Grid.Row="7" TextWrapping="Wrap" />
+        <TextBlock Text="Виконавець" Grid.Row="8" TextWrapping="Wrap" />
+        <TextBlock Text="Тел. виконавця" Grid.Row="9" TextWrapping="Wrap" />
+        <TextBlock Text="Передав" Grid.Row="10" TextWrapping="Wrap" />
+        <TextBlock Text="Прийняв" Grid.Row="11" TextWrapping="Wrap" />
+        <TextBlock Text="Час" Grid.Row="12" TextWrapping="Wrap" />
 
         <RadioButton Grid.Column="1" Margin="10,10,0,8" GroupName="UrgencyGroup" Content="Проста" IsChecked="{Binding Urgency, ConverterParameter=0, Converter={StaticResource urgencyConverterKey}}"  HorizontalAlignment="Left" Width="70" />
         <RadioButton Grid.Column="1" Margin="85,10,0,8" GroupName="UrgencyGroup" Content="Термінова" IsChecked="{Binding Urgency, ConverterParameter=1, Converter={StaticResource urgencyConverterKey}}" HorizontalAlignment="Left" Width="80" />
@@ -49,16 +61,21 @@
         <TextBox Text="{Binding To}" Grid.Column="1" Grid.Row="2" />
         <TextBox Text="{Binding Text}" Grid.Column="1" Grid.Row="3" VerticalScrollBarVisibility="Auto" TextWrapping="Wrap" AcceptsReturn="True" />
         <TextBox Text="{Binding Subnum}" Grid.Column="1" Grid.Row="4" />
-        <TextBox Text="{Binding Date}" Grid.Column="1" Grid.Row="5" />
-        <TextBox Text="{Binding Dispatcher}" Grid.Column="1" Grid.Row="6" />
-       
+        <TextBox Text="{Binding SenderPos}" Grid.Column="1" Grid.Row="5" />
+        <TextBox Text="{Binding SenderRank}" Grid.Column="1" Grid.Row="6" />
+        <TextBox Text="{Binding SenderName}" Grid.Column="1" Grid.Row="7" />
+        <TextBox Text="{Binding Executor}" Grid.Column="1" Grid.Row="8" />
+        <TextBox Text="{Binding Phone}" Grid.Column="1" Grid.Row="9" />
+        <TextBox Text="{Binding HandedBy}" Grid.Column="1" Grid.Row="10" />
+        <TextBox Text="{Binding Dispatcher}" Grid.Column="1" Grid.Row="11" />
+        <TextBox Text="{Binding Time}" Grid.Column="1" Grid.Row="12" />
 
-        <StackPanel HorizontalAlignment="Left" Orientation="Horizontal" Grid.Row="7" Grid.Column="1" Width="140" Margin="10,0,0,0">
+        <StackPanel HorizontalAlignment="Left" Orientation="Horizontal" Grid.Row="13" Grid.Column="1" Width="140" Margin="10,0,0,0">
             <Button IsDefault="True" Click="Accept_Click" MinWidth="60" Margin="5" Content="OK"/>
             <Button IsCancel="True" MinWidth="60" Margin="5" Content="Скасувати"/>
         </StackPanel>
 
-        <StackPanel HorizontalAlignment="Right" Orientation="Horizontal" Grid.Row="7" Grid.Column="1" Width="175" Margin="0,0,8,0">
+        <StackPanel HorizontalAlignment="Right" Orientation="Horizontal" Grid.Row="13" Grid.Column="1" Width="175" Margin="0,0,8,0">
             <Button MinWidth="60" Margin="5" Content="Друк"/>
             <Button MinWidth="60" Margin="5" Content="Відкрити у Word"/>
         </StackPanel>

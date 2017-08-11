@@ -1,11 +1,4 @@
-﻿using System;
-using System.Collections.ObjectModel;
-using System.Windows;
-using System.Windows.Navigation;
-using System.IO;
-using System.Text.RegularExpressions;
-using IFilterTextReader;
-using System.Windows.Interactivity;
+﻿using System.Windows;
 
 namespace Telegraph
 {
@@ -22,9 +15,8 @@ namespace Telegraph
         public TlgManagerWnd(ApplicationViewModel model)
         {
             InitializeComponent();
-            this.telegramsList.DataContext = model;
+            this.DataContext = model;
         }
-
 
         private void telegramsList_DragLeave(object sender, DragEventArgs e)
         {
@@ -36,7 +28,6 @@ namespace Telegraph
             if (e.Data.GetDataPresent(DataFormats.FileDrop, true))
             {
                 this.telegramsList.BorderThickness = new Thickness(3);
-
             }
         }
 

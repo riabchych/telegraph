@@ -1,4 +1,5 @@
 ﻿using IFilterTextReader;
+using Microsoft.Win32;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -18,7 +19,7 @@ namespace Telegraph
         private const string to = @"(КОМАН[ЙЦУКЕНГШЩЗХЇЄЖДЛОРПАВІФЯЧСМИТЬБЮ]+[\w\d\W].*[\n\r])";
         private const string text = @"КОМАН[ЙЦУКЕНГШЩЗХЇЄЖДЛОРПАВІФЯЧСМИТЬБЮ]+[\w\d\W].*[\n\r].?([ЙЦУКЕНГШЩЗХЇЄЖДЛОРПАВІФЯЧСМИТЬБЮ\w\d\W\n\r]*)НР";
         private const string urgency = @"[\s\t\d]{10,}....(ТЕРМІНОВ.)";
-        private const string all = @".З[\w\W]*.НР[\W]*([0-9]*)[\W\n\r]*КОМАН[ЙЦУКЕНГШЩЗХЇЄЖДЛОРПАВІФЯЧСМИТЬБЮ\s\/]+([\d\s].*)[\n\r].?([ЙЦУКЕНГШЩЗХЇЄЖДЛОРПАВІФЯЧСМИТЬБЮ\w\d\W\n\r]*)НР\.([\d\/\-]*)[[ЙЦУКЕНГШЩЗХЇЄЖДЛОРПАВІФЯЧСМИТЬБЮ\s\.]*]?([\d\.]+)";
+        private const string all = @"^.З[\w\W]*.НР[\s\.]*([0-9]*){1}[\s]*$[\n\r]*+^[ЙЦУКЕНГШЩЗХЇЄЖДЛОРПАВІФЯЧСМИТЬБЮ\s\/]+([\d\s]+)$[\n\r]+^([ЙЦУКЕНГШЩЗХЇЄЖДЛОРПАВІФЯЧСМИТЬБЮ\w\d\W\n\r]+)^НР\.([\d\/\-]*){1}[\s]+([ЙЦУКЕНГШЩЗХЇЄЖДЛОРПАВІФЯЧСМИТЬБЮ\s\.\-0-9]+)^([\d\.\/\\]+){1}[\s]+([ЙЦУКЕНГШЩЗХЇЄЖДЛОРПАВІФЯЧСМИТЬБЮ\s\-0-9]+)$[\n\r\s]+([ЙЦУКЕНГШЩЗХЇЄЖДЛОРПАВІФЯЧСМИТЬБЮ\-0-9]+){1}[\s]+([ЙЦУКЕНГШЩЗХЇЄЖДЛОРПАВІФЯЧСМИТЬБЮ\s\-0-9\.]+)[\s][\r\n]$[\n\r\s\-]+^ВИК[\s\.]+([ЙЦУКЕНГШЩЗХЇЄЖДЛОРПАВІФЯЧСМИТЬБЮ0-9]+){1}[\s]+([0-9\-]+){1}[\s]*$[\n\r\s\-]+^ПРД[\s\.]+([ЙЦУКЕНГШЩЗХЇЄЖДЛОРПАВІФЯЧСМИТЬБЮ0-9]+){1}";
 
         public static string Number => number;
         public static string To => to;
@@ -33,11 +34,12 @@ namespace Telegraph
         private IEnumerable<Telegram> telegrams;
         private IEnumerable<User> Users;
         private Task dbTask;
-        private bool isUrgency;
 
+        RelayCommand newCommand;
         RelayCommand addCommand;
         RelayCommand editCommand;
         RelayCommand deleteCommand;
+        private Telegram telegram;
 
         public ApplicationViewModel()
         {
@@ -56,12 +58,10 @@ namespace Telegraph
             DbTask = Task.Factory.StartNew(async () =>
             {
                 Db.Telegrams.Load();
-                Db.Users.Load();
 
                 if (await Task.WhenAny(DbTask, Task.Delay(1000 * 60)) == DbTask)
                 {
                     Telegrams = Db.Telegrams.Local.ToBindingList();
-                    Users = Db.Users.Local.ToBindingList();
                     if (context != null && callback != null)
                     {
                         context.Send(callback, null);
@@ -69,6 +69,25 @@ namespace Telegraph
                 }
             });
         }
+
+        public RelayCommand NewCommand
+        {
+            get
+            {
+                return newCommand ??
+                    (newCommand = new RelayCommand((o) =>
+                    {
+                        TelegramWnd telegramWnd = new TelegramWnd(new Telegram());
+                        if (telegramWnd.ShowDialog() == true)
+                        {
+                            Telegram tlg = telegramWnd.Telegram;
+                            db.Telegrams.Add(tlg);
+                            db.SaveChanges();
+                        }
+                    }));
+            }
+        }
+
         // команда добавления
         public RelayCommand AddCommand
         {
@@ -77,86 +96,150 @@ namespace Telegraph
                 return addCommand ??
                   (addCommand = new RelayCommand((o) =>
                   {
-                      if (o == null) return;
-                      // получаем выделенный объект
-                      DragEventArgs e = o as DragEventArgs;
 
-                      string[] files = (string[])e.Data.GetData(DataFormats.FileDrop);
-                      TextReader reader;
-                      bool isUrgency;
-
-                      foreach (string filePath in files)
+                      string[] files = null;
+                      if (o == null)
                       {
-                          reader = new FilterReader(filePath);
+                          // Create OpenFileDialog 
+                          OpenFileDialog dlg = new OpenFileDialog();
 
-                          using (reader)
+
+
+                          // Set filter for file extension and default file extension 
+                          dlg.DefaultExt = ".doc";
+                          dlg.Filter = "Word Files (*.doc)|*.doc|Word Files (*.docx)|*.docx|Всі файли (*.*)|*.*";
+                          dlg.CheckFileExists = true;
+                          dlg.Multiselect = true;
+
+                          // Display OpenFileDialog by calling ShowDialog method 
+                          Nullable<bool> result = dlg.ShowDialog();
+
+
+                          // Get the selected file name and display in a TextBox 
+                          if (result == true)
                           {
-                              string docText = null;
-                              docText = reader.ReadToEnd();
-
-                              GroupCollection groups = new Regex(TlgRegex.All).Match(docText).Groups;
-                              isUrgency = new Regex(TlgRegex.Urgency).IsMatch(docText);
-
-                              string num = groups[1].Value.Trim().ToString();
-
-                              int number = Int32.Parse((num != "") ? num : "0");
-                              string to = groups[2].Value.Trim();
-                              string text = groups[3].Value.Trim();
-                              string subNum = groups[4].Value.Trim();
-                              string date = groups[5].Value.Trim();
-                              int urgency = isUrgency ? 1 : 0;
-
-                              try
-                              {
-                                  if (number < 1)
-                                      throw new Exception("Не удалось извлечь некоторую информацию.");
-                                  if (to == "")
-                                      throw new Exception("Не удалось извлечь некоторую информацию.");
-                                  if (text == "")
-                                      throw new Exception("Не удалось извлечь некоторую информацию.");
-                                  if (subNum == "")
-                                      throw new Exception("Не удалось извлечь некоторую информацию.");
-                                  if (date == "")
-                                      throw new Exception("Не удалось извлечь некоторую информацию.");
-
-                                  IsUrgency = urgency > 0 ? true : false;
-
-                                  Telegram tlg = new Telegram()
-                                  {
-                                      Number = number,
-                                      To = to,
-                                      Text = text,
-                                      Subnum = subNum,
-                                      Date = date,
-                                      Urgency = urgency,
-                                      Dispatcher = ""
-                                  };
-
-                                  //TelegramViewModel vm = new TelegramViewModel();
-                                  TelegramWnd telegramWnd = new TelegramWnd(tlg);
-                                  if (telegramWnd.ShowDialog() == true)
-                                  {
-                                      telegramWnd.Telegram = tlg;
-
-                                      db.Telegrams.Add(tlg);
-                                  }
-
-                                  
-                              }
-                              catch (Exception err)
-                              {
-                                  MessageBox.Show(err.Message);
-                              }
-
-                              /*using (StreamWriter sw = new StreamWriter(wordDoc.MainDocumentPart.GetStream(FileMode.Create)))
-                              {
-                                  sw.Write(docText);
-                              }*/
+                              // Open document 
+                              files = dlg.FileNames;
                           }
                       }
-                      db.SaveChanges();
+                      else
+                      {
+                          DragEventArgs e = o as DragEventArgs;
+                          files = (string[])e.Data.GetData(DataFormats.FileDrop);
+                      }
+
+                      InsertIntoDb(files);
+
+
                   }));
             }
+        }
+
+        private void InsertIntoDb(string[] files)
+        {
+            foreach (string filePath in files)
+            {
+                using (TextReader reader = new FilterReader(filePath))
+                {
+                    string docText = reader.ReadToEnd();
+
+                    if (string.IsNullOrWhiteSpace(docText)) continue;
+
+                    GroupCollection groups = new Regex(TlgRegex.All, RegexOptions.Multiline).Match(docText).Groups;
+                    bool isUrgency = new Regex(TlgRegex.Urgency).IsMatch(docText);
+
+                    string num = groups[1].Value.Trim().ToString();
+                    int number = Int32.Parse((!string.IsNullOrWhiteSpace(num)) ? num : "0");
+                    string SenderPosPart1 = groups[5].Value.Trim();
+                    string SenderPosPart2 = groups[7].Value.Trim();
+
+                    int urgency = isUrgency ? 1 : 0;
+
+                    try
+                    {
+                        Telegram tlg = new Telegram()
+                        {
+                            Number = number,
+                            To = groups[2].Value.Trim(),
+                            Text = groups[3].Value.Trim(),
+                            Subnum = groups[4].Value.Trim(),
+                            Date = groups[6].Value.Trim(),
+                            SenderPos = string.Concat(SenderPosPart1, SenderPosPart2),
+                            SenderRank = groups[8].Value.Trim(),
+                            SenderName = groups[9].Value.Trim(),
+                            Executor = groups[10].Value.Trim(),
+                            Phone = groups[11].Value.Trim(),
+                            HandedBy = groups[12].Value.Trim(),
+                            Urgency = urgency,
+                            Dispatcher = string.Empty,
+                            Time = string.Empty
+                        };
+
+                        CheckData(tlg);
+
+                        //TelegramViewModel vm = new TelegramViewModel();
+                        TelegramWnd telegramWnd = new TelegramWnd(tlg);
+                        if (telegramWnd.ShowDialog() == true)
+                        {
+                            telegramWnd.Telegram = tlg;
+                            db.Telegrams.Add(tlg);
+                        }
+
+
+                    }
+                    catch (Exception err)
+                    {
+                        MessageBox.Show(err.Message);
+                    }
+
+                    /*using (StreamWriter sw = new StreamWriter(wordDoc.MainDocumentPart.GetStream(FileMode.Create)))
+                    {
+                        sw.Write(docText);
+                    }*/
+                }
+            }
+            db.SaveChanges();
+        }
+
+        private void OpenTlgWnd(Telegram tlg)
+        {
+            TelegramWnd telegramWindow = new TelegramWnd(tlg);
+
+            if (telegramWindow.ShowDialog() == true)
+            {
+                // получаем измененный объект
+                telegramWindow.Telegram = tlg;
+
+                db.Telegrams.Add(tlg);
+                telegram = db.Telegrams.Find(telegramWindow.Telegram.id);
+                if (telegram != null)
+                {
+                    telegram.Number = telegramWindow.Telegram.Number;
+                    telegram.To = telegramWindow.Telegram.To;
+                    telegram.Text = telegramWindow.Telegram.Text;
+                    telegram.Subnum = telegramWindow.Telegram.Subnum;
+                    telegram.Date = telegramWindow.Telegram.Date;
+                    telegram.Urgency = telegramWindow.Telegram.Urgency;
+                    telegram.Dispatcher = telegramWindow.Telegram.Dispatcher;
+
+                    db.Entry(telegram).State = EntityState.Modified;
+                    db.SaveChanges();
+                }
+            }
+        }
+
+        private bool CheckData(Telegram data)
+        {
+            if (data.Number < 1 || string.IsNullOrWhiteSpace(data.To) || string.IsNullOrWhiteSpace(data.Text) ||
+                string.IsNullOrWhiteSpace(data.Subnum) || string.IsNullOrWhiteSpace(data.Date))
+            {
+                throw new Exception("Не удалось извлечь некоторую информацию.");
+            }
+            else
+            {
+                return true;
+            }
+
         }
 
         // команда редактирования
@@ -182,9 +265,6 @@ namespace Telegraph
                           Urgency = telegram.Urgency,
                           Dispatcher = telegram.Dispatcher,
                       };
-
-                      int urgency = isUrgency ? 1 : 0;
-                      IsUrgency = urgency > 0 ? true : false;
 
                       TelegramWnd telegramWindow = new TelegramWnd(tlg);
 
@@ -215,7 +295,6 @@ namespace Telegraph
         public IEnumerable<Telegram> Telegrams { get => telegrams; set => telegrams = value; }
         public Task DbTask { get => dbTask; set => dbTask = value; }
         public RelayCommand DeleteCommand { get => deleteCommand; set => deleteCommand = value; }
-        public bool IsUrgency { get => isUrgency; set => isUrgency = value; }
         public IEnumerable<User> Users1 { get => Users; set => Users = value; }
 
         public event PropertyChangedEventHandler PropertyChanged;

@@ -9,53 +9,67 @@
         mc:Ignorable="d"
         Title="Центр керування телеграмами" Height="526" Width="581" AllowDrop="True">
     <Grid>
-        <ToolBarTray VerticalAlignment="Top" Height="40">
-            <ToolBar Height="40">
-                <Button Content="Додати" Width="85" />
-                <Button Content="Редагувати"  Width="85" />
-                <Button Content="Видалити"  Width="85" />
+        <Grid.RowDefinitions>
+            <RowDefinition Height="20" />
+            <RowDefinition Height="25" />
+            <RowDefinition />
+            <RowDefinition Height="25" />
+        </Grid.RowDefinitions>
+        <Menu Background="{x:Null}" >
+            <MenuItem Header="Файл" Foreground="Black">
+                <MenuItem Header="Створити" Command="{Binding NewCommand}"/>
+                <MenuItem Header="Відкрити" Command="{Binding AddCommand}"/>
+                <Separator/>
+                <MenuItem Header="Імпорт"/>
+                <MenuItem Header="Експорт"/>
+                <Separator/>
+                <MenuItem Header="Вихід"/>
+            </MenuItem>
+        </Menu>
+        <ToolBarTray Grid.Row="1">
+            <ToolBar >
+                <Button Content="" Width="85" />
+                <Button Content=""  Width="85" />
+                <Button Content=""  Width="85" />
             </ToolBar>
         </ToolBarTray>
-        <Grid x:Name="rootGrid" Margin="0,40,0,25" VerticalAlignment="Stretch">
-            <ListView DockPanel.Dock="Top" x:Name="telegramsList"  ItemsSource="{Binding Telegrams}" VerticalContentAlignment="Center" BorderBrush="Khaki" DragLeave="telegramsList_DragLeave" DragEnter="telegramsList_DragEnter" Drop="telegramsList_Drop">
-
-                <i:Interaction.Triggers>
-                    <i:EventTrigger EventName="Drop">
-                        <cmd:EventToCommand Command="{Binding AddCommand}"
+        <ListView Grid.Row="2" x:Name="telegramsList"  ItemsSource="{Binding Telegrams}" VerticalContentAlignment="Center" BorderBrush="Khaki" DragLeave="telegramsList_DragLeave" DragEnter="telegramsList_DragEnter" Drop="telegramsList_Drop">
+            <i:Interaction.Triggers>
+                <i:EventTrigger EventName="Drop">
+                    <cmd:EventToCommand Command="{Binding AddCommand}"
                             PassEventArgsToCommand="True" />
-                    </i:EventTrigger>
-                    <i:EventTrigger EventName="MouseDoubleClick">
-                        <cmd:EventToCommand Command="{Binding EditCommand}" CommandParameter="{Binding ElementName=telegramsList, Path=SelectedItem}" />
-                    </i:EventTrigger>
-                </i:Interaction.Triggers>
+                </i:EventTrigger>
+                <i:EventTrigger EventName="MouseDoubleClick">
+                    <cmd:EventToCommand Command="{Binding EditCommand}" CommandParameter="{Binding ElementName=telegramsList, Path=SelectedItem}" />
+                </i:EventTrigger>
+            </i:Interaction.Triggers>
 
-                <ListView.View>
-                    <GridView>
-                        <GridViewColumn Width="50" Header="ID" DisplayMemberBinding="{Binding id}"  />
-                        <GridViewColumn Width="75" Header="Номер"  DisplayMemberBinding="{Binding Number}"  />
-                        <GridViewColumn Width="120" Header="Підписний"  DisplayMemberBinding="{Binding Subnum}" />
-                        <GridViewColumn Width="70" Header="Дата" DisplayMemberBinding="{Binding Date}" />
-                        <GridViewColumn Width="100" Header="Терміновість"  DisplayMemberBinding="{Binding Urgency}" />
-                        <GridViewColumn Width="150" Header="Еспедитор"  DisplayMemberBinding="{Binding Dispatcher}" />
-                    </GridView>
-                </ListView.View>
+            <ListView.View>
+                <GridView>
+                    <GridViewColumn Width="50" Header="ID" DisplayMemberBinding="{Binding id}"  />
+                    <GridViewColumn Width="75" Header="Номер"  DisplayMemberBinding="{Binding Number}"  />
+                    <GridViewColumn Width="120" Header="Підписний"  DisplayMemberBinding="{Binding Subnum}" />
+                    <GridViewColumn Width="70" Header="Дата" DisplayMemberBinding="{Binding Date}" />
+                    <GridViewColumn Width="100" Header="Терміновість"  DisplayMemberBinding="{Binding Urgency}" />
+                    <GridViewColumn Width="150" Header="Еспедитор"  DisplayMemberBinding="{Binding Dispatcher}" />
+                </GridView>
+            </ListView.View>
 
-                <ListView.Resources>
+            <ListView.Resources>
                 <Style TargetType="{x:Type GridViewColumnHeader}">
                     <Setter Property="HorizontalContentAlignment" Value="Left" />
                 </Style>
-                </ListView.Resources>
-                <ListView.ItemContainerStyle>
-                    <Style TargetType="{x:Type ListViewItem}">
-                        <Setter Property="ToolTip" Value="{Binding Text}"/>
-                        <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
-                    </Style>
+            </ListView.Resources>
+            <ListView.ItemContainerStyle>
+                <Style TargetType="{x:Type ListViewItem}">
+                    <Setter Property="ToolTip" Value="{Binding Text}"/>
+                    <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+                </Style>
 
-                </ListView.ItemContainerStyle>
-            </ListView>
-        </Grid>
-        
-        <StatusBar Height="25" VerticalAlignment="Bottom">
+            </ListView.ItemContainerStyle>
+        </ListView>
+
+        <StatusBar Grid.Row="3">
             <StatusBar.ItemsPanel>
                 <ItemsPanelTemplate>
                     <Grid>

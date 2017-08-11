@@ -14,6 +14,13 @@ namespace Telegraph
         private string date;
         private int urgency;
         private string dispatcher;
+        private string senderPos;
+        private string senderRank;
+        private string senderName;
+        private string executor;
+        private string phone;
+        private string handedBy;
+        private string time;
 
         public int id { get; set; }
 
@@ -84,6 +91,75 @@ namespace Telegraph
             {
                 dispatcher = value;
                 OnPropertyChanged("Dispatcher");
+            }
+        }
+
+        public string SenderPos
+        {
+            get { return senderPos; }
+            set
+            {
+                senderPos = value;
+                OnPropertyChanged("SenderPos");
+            }
+        }
+        public string SenderName
+        {
+            get { return senderName; }
+            set
+            {
+                senderName = value;
+                OnPropertyChanged("SenderName");
+            }
+        }
+
+        public string SenderRank
+        {
+            get { return senderRank; }
+            set
+            {
+                senderRank = value;
+                OnPropertyChanged("SendeRank");
+            }
+        }
+
+        public string Executor
+        {
+            get { return executor; }
+            set
+            {
+                executor = value;
+                OnPropertyChanged("Executor");
+            }
+        }
+
+        public string Phone
+        {
+            get { return phone; }
+            set
+            {
+                phone = value;
+                OnPropertyChanged("Phone");
+            }
+        }
+
+        public string HandedBy
+        {
+            get { return handedBy; }
+            set
+            {
+                handedBy = value;
+                OnPropertyChanged("HandedBy");
+            }
+        }
+
+        public string Time
+        {
+            get { return time; }
+            set
+            {
+                time = value;
+                OnPropertyChanged("Time");
             }
         }
 
