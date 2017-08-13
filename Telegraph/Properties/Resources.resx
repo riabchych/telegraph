@@ -117,28 +117,4 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="user1" xml:space="preserve">
-    <value>Рябчич</value>
-  </data>
-  <data name="user2" xml:space="preserve">
-    <value>Корнийчук</value>
-  </data>
-  <data name="user3" xml:space="preserve">
-    <value>Курганський</value>
-  </data>
-  <data name="user4" xml:space="preserve">
-    <value>Коломієць</value>
-  </data>
-  <data name="user5" xml:space="preserve">
-    <value>Царик</value>
-  </data>
-  <data name="user6" xml:space="preserve">
-    <value>Кулик</value>
-  </data>
-  <data name="user7" xml:space="preserve">
-    <value>Добродомов</value>
-  </data>
-  <data name="user8" xml:space="preserve">
-    <value>Матухно</value>
-  </data>
 </root>

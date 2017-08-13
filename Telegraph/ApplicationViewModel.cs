@@ -41,6 +41,7 @@ namespace Telegraph
         RelayCommand newCommand;
         RelayCommand addCommand;
         RelayCommand editCommand;
+        RelayCommand deleteCommand;
         RelayCommand windowLoaded;
 
         private bool isBusy = false;
@@ -139,6 +140,7 @@ namespace Telegraph
                           {
                               // Open document 
                               files = dlg.FileNames;
+                              InsertIntoDb(files);
                           }
                       }
                       else
@@ -149,6 +151,21 @@ namespace Telegraph
                       }
                       
                   }));
+            }
+        }
+
+        public RelayCommand DeleteCommand
+        {
+            get
+            {
+                return deleteCommand ??
+                    (deleteCommand = new RelayCommand((selectedItem) =>
+                    {
+                        if (selectedItem == null) return;
+                        Telegram tlg = selectedItem as Telegram;
+                        db.Telegrams.Remove(tlg);
+                        db.SaveChanges();
+                    }));
             }
         }
 

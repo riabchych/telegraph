@@ -8,7 +8,7 @@
         xmlns:local="clr-namespace:Telegraph"
         xmlns:extToolkit="http://schemas.xceed.com/wpf/xaml/toolkit"
         mc:Ignorable="d"
-        Title="Центр керування телеграмами" Height="526" Width="581" AllowDrop="True">
+        Title="Центр керування телеграмами" Height="520" Width="600" AllowDrop="True">
 
     <i:Interaction.Triggers>
         <i:EventTrigger EventName="Loaded">
@@ -16,11 +16,11 @@
         </i:EventTrigger>
     </i:Interaction.Triggers>
 
-    <extToolkit:BusyIndicator x:Name="_busyIndicator" BusyContent="Завантаження, будь ласка, зачекайте..." IsBusy="{Binding IsBusy}">
+    <extToolkit:BusyIndicator BusyContent="Завантаження, будь ласка, зачекайте..." IsBusy="{Binding IsBusy}">
         <Grid>
             <Grid.RowDefinitions>
                 <RowDefinition Height="20" />
-                <RowDefinition Height="25" />
+                <RowDefinition Height="32" />
                 <RowDefinition />
                 <RowDefinition Height="25" />
             </Grid.RowDefinitions>
@@ -34,12 +34,31 @@
                     <Separator/>
                     <MenuItem Header="Вихід"/>
                 </MenuItem>
+                <MenuItem Header="Редагування">
+
+                </MenuItem>
+                <MenuItem Header="Сервіс">
+
+                </MenuItem>
+                <MenuItem Header="Допомога">
+
+                </MenuItem>
             </Menu>
-            <ToolBarTray Grid.Row="1">
-                <ToolBar >
-                    <Button Content="" Width="85" />
-                    <Button Content=""  Width="85" />
-                    <Button Content=""  Width="85" />
+            <ToolBarTray Grid.Row="1" ScrollViewer.VerticalScrollBarVisibility="Disabled" Grid.IsSharedSizeScope="True" VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
+                <ToolBar Height="32" HorizontalAlignment="Stretch">
+                    <Button ToolTip="Створити" Command="{Binding NewCommand}" CommandParameter="" VerticalAlignment="Stretch" Margin="0,0,5,-3" >
+                        <Image Source="icons/page_white.png"></Image>
+                    </Button>
+                    <Button ToolTip="Додати" Command="{Binding AddCommand}"  VerticalAlignment="Stretch" Margin="0,0,5,-3" >
+                        <Image Source="icons/page_white_add.png"></Image>
+                    </Button>
+                    <Button ToolTip="Редагувати" Command="{Binding EditCommand}" IsEnabled="{Binding ElementName=telegramsList, Path=SelectedItems.Count}" CommandParameter="{Binding ElementName=telegramsList, Path=SelectedItem}" VerticalAlignment="Stretch" Margin="0,0,5,-3" >
+                        <Image Source="icons/page_white_edit.png"></Image>
+                    </Button>
+
+                    <Button ToolTip="Видалити" Command="{Binding DeleteCommand}" IsEnabled="{Binding ElementName=telegramsList, Path=SelectedItems.Count}" CommandParameter="{Binding ElementName=telegramsList, Path=SelectedItem}" VerticalAlignment="Stretch" Margin="0,0,5,-3">
+                        <Image Source="icons/page_white_delete.png"></Image>
+                    </Button>
                 </ToolBar>
             </ToolBarTray>
             <ListView Grid.Row="2" x:Name="telegramsList"  ItemsSource="{Binding Telegrams}" VerticalContentAlignment="Center" BorderBrush="Khaki" DragLeave="telegramsList_DragLeave" DragEnter="telegramsList_DragEnter" Drop="telegramsList_Drop">
@@ -56,10 +75,11 @@
                     <GridView>
                         <GridViewColumn Width="50" Header="ID" DisplayMemberBinding="{Binding SelfNum}"  />
                         <GridViewColumn Width="75" Header="Номер"  DisplayMemberBinding="{Binding IncNum}"  />
-                        <GridViewColumn Width="120" Header="Підписний"  DisplayMemberBinding="{Binding SubNum}" />
+                        <GridViewColumn Width="100" Header="Підписний"  DisplayMemberBinding="{Binding SubNum}" />
                         <GridViewColumn Width="70" Header="Дата" DisplayMemberBinding="{Binding Date}" />
-                        <GridViewColumn Width="100" Header="Терміновість"  DisplayMemberBinding="{Binding Urgency}" />
-                        <GridViewColumn Width="150" Header="Еспедитор"  DisplayMemberBinding="{Binding Dispatcher}" />
+                        <GridViewColumn Width="100" Header="Виконавець"  DisplayMemberBinding="{Binding Executor}" />
+                        <GridViewColumn Width="100" Header="Еспедитор"  DisplayMemberBinding="{Binding Dispatcher}" />
+                        <GridViewColumn Width="80" Header="Терміновість"  DisplayMemberBinding="{Binding Urgency}" />
                     </GridView>
                 </ListView.View>
 
@@ -92,7 +112,7 @@
                     </ItemsPanelTemplate>
                 </StatusBar.ItemsPanel>
                 <StatusBarItem>
-                    <TextBlock Name="StatusIndicator" Text="Ready"></TextBlock>
+                    <TextBlock Name="StatusIndicator" Text="Готово"></TextBlock>
                 </StatusBarItem>
                 <StatusBarItem Grid.Column="1">
                     <ProgressBar Width="100" Height="17" Name="ProgressBar" VerticalAlignment="Center" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" HorizontalAlignment="Right">

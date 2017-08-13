@@ -6,7 +6,7 @@
         xmlns:local="clr-namespace:Telegraph"
         xmlns:Properties="clr-namespace:Telegraph.Properties" x:Class="Telegraph.TelegramWnd"
         mc:Ignorable="d"
-        Title="Телеграма" Height="640.15" Width="560" MinWidth="560" MinHeight="440" WindowStartupLocation="CenterOwner">
+        Title="Телеграма" Height="640.15" Width="560" MinWidth="560" MinHeight="440" WindowStartupLocation="CenterScreen" ScrollViewer.VerticalScrollBarVisibility="Disabled">
     <Window.Resources>
         <local:UrgencyConverter x:Key="urgencyConverterKey" />
 
