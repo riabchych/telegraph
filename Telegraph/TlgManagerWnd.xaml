@@ -46,9 +46,9 @@
 
             <ListView.View>
                 <GridView>
-                    <GridViewColumn Width="50" Header="ID" DisplayMemberBinding="{Binding id}"  />
-                    <GridViewColumn Width="75" Header="Номер"  DisplayMemberBinding="{Binding Number}"  />
-                    <GridViewColumn Width="120" Header="Підписний"  DisplayMemberBinding="{Binding Subnum}" />
+                    <GridViewColumn Width="50" Header="ID" DisplayMemberBinding="{Binding SelfNum}"  />
+                    <GridViewColumn Width="75" Header="Номер"  DisplayMemberBinding="{Binding IncNum}"  />
+                    <GridViewColumn Width="120" Header="Підписний"  DisplayMemberBinding="{Binding SubNum}" />
                     <GridViewColumn Width="70" Header="Дата" DisplayMemberBinding="{Binding Date}" />
                     <GridViewColumn Width="100" Header="Терміновість"  DisplayMemberBinding="{Binding Urgency}" />
                     <GridViewColumn Width="150" Header="Еспедитор"  DisplayMemberBinding="{Binding Dispatcher}" />
