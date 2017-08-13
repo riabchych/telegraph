@@ -41,35 +41,60 @@ namespace Telegraph
         RelayCommand newCommand;
         RelayCommand addCommand;
         RelayCommand editCommand;
-        RelayCommand deleteCommand;
+        RelayCommand windowLoaded;
 
-        public ApplicationViewModel()
+        private bool isBusy = false;
+
+        public IEnumerable<Telegram> Telegrams
         {
-            InitApplicationViewModel();
-        }
-
-        public ApplicationViewModel(SynchronizationContext context, SendOrPostCallback callback)
-        {
-            InitApplicationViewModel(context, callback);
-        }
-
-        private void InitApplicationViewModel(SynchronizationContext context = null, SendOrPostCallback callback = null)
-        {
-            Db = new ApplicationContext();
-
-            DbTask = Task.Factory.StartNew(async () =>
+            get
             {
-                Db.Telegrams.Load();
+                return telegrams;
+            }
 
-                if (await Task.WhenAny(DbTask, Task.Delay(1000 * 60)) == DbTask)
-                {
-                    Telegrams = Db.Telegrams.Local.ToBindingList();
-                    if (context != null && callback != null)
-                    {
-                        context.Send(callback, null);
-                    }
-                }
-            });
+            set
+            {
+                telegrams = value;
+                OnPropertyChanged("Telegrams");
+            }
+        }
+
+        public bool IsBusy
+        {
+            get
+            {
+                return isBusy;
+            }
+
+            set
+            {
+                isBusy = value;
+                OnPropertyChanged("IsBusy");
+            }
+        }
+
+        public RelayCommand WindowLoaded
+        {
+            get
+            {
+                return windowLoaded ??
+                  (windowLoaded = new RelayCommand((o) =>
+                  {
+                      IsBusy = true;
+                      Db = new ApplicationContext();
+                      DbTask = Task.Factory.StartNew(async () =>
+                      {
+                          
+                          Db.Telegrams.Load();
+
+                          await DbTask;
+
+                          Telegrams = Db.Telegrams.Local.ToBindingList();
+                          IsBusy = false;
+
+                      });
+                  }));
+            }
         }
 
         public RelayCommand NewCommand
@@ -120,14 +145,14 @@ namespace Telegraph
                       {
                           DragEventArgs e = o as DragEventArgs;
                           files = (string[])e.Data.GetData(DataFormats.FileDrop);
+                          InsertIntoDb(files);
                       }
-
-                      InsertIntoDbAsync(files);
+                      
                   }));
             }
         }
 
-        private async void InsertIntoDbAsync(string[] files)
+        private void InsertIntoDb(string[] files)
         {
             foreach (string filePath in files)
             {
@@ -182,11 +207,7 @@ namespace Telegraph
                     };
 
                     CheckData(tlg);
-
-
                     OpenTlgWnd(tlg);
-
-
                 }
             }
 
@@ -236,9 +257,7 @@ namespace Telegraph
                 }
             }
 
-
             db.SaveChanges();
-
         }
 
         private bool CheckData(Telegram data)
@@ -282,9 +301,7 @@ namespace Telegraph
         }
 
         public ApplicationContext Db { get => db; set => db = value; }
-        public IEnumerable<Telegram> Telegrams { get => telegrams; set => telegrams = value; }
         public Task DbTask { get => dbTask; set => dbTask = value; }
-        public RelayCommand DeleteCommand { get => deleteCommand; set => deleteCommand = value; }
 
         public event PropertyChangedEventHandler PropertyChanged;
         public void OnPropertyChanged([CallerMemberName]string prop = "")

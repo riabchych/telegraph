@@ -1,4 +1,6 @@
-﻿using System.Windows;
+﻿using System.ComponentModel;
+using System.Threading;
+using System.Windows;
 
 namespace Telegraph
 {
@@ -7,15 +9,12 @@ namespace Telegraph
     /// </summary>
     public partial class TlgManagerWnd : System.Windows.Window
     {
+
         public TlgManagerWnd()
         {
             InitializeComponent();
-        }
-
-        public TlgManagerWnd(ApplicationViewModel model)
-        {
-            InitializeComponent();
-            this.DataContext = model;
+            ApplicationViewModel appViewModel = new ApplicationViewModel();
+            DataContext = appViewModel;
         }
 
         private void telegramsList_DragLeave(object sender, DragEventArgs e)
