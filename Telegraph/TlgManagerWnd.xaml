@@ -4,6 +4,7 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity"
+        xmlns:cmd="http://www.galasoft.ch/mvvmlight"
         xmlns:local="clr-namespace:Telegraph"
         xmlns:extToolkit="http://schemas.xceed.com/wpf/xaml/toolkit"
         mc:Ignorable="d"
@@ -11,7 +12,7 @@
 
     <i:Interaction.Triggers>
         <i:EventTrigger EventName="Loaded">
-            <i:InvokeCommandAction Command="{Binding WindowLoaded}" CommandParameter="{Binding ElementName=telegramsList, Path=ItemsSource}"/>
+            <cmd:EventToCommand Command="{Binding WindowLoaded}" CommandParameter="{Binding ElementName=telegramsList, Path=ItemsSource}"/>
         </i:EventTrigger>
     </i:Interaction.Triggers>
 
@@ -44,10 +45,10 @@
             <ListView Grid.Row="2" x:Name="telegramsList"  ItemsSource="{Binding Telegrams}" VerticalContentAlignment="Center" BorderBrush="Khaki" DragLeave="telegramsList_DragLeave" DragEnter="telegramsList_DragEnter" Drop="telegramsList_Drop">
                 <i:Interaction.Triggers>
                     <i:EventTrigger EventName="Drop">
-                        <i:InvokeCommandAction Command="{Binding AddCommand}"  />
+                        <cmd:EventToCommand Command="{Binding AddCommand}" PassEventArgsToCommand="True"  />
                     </i:EventTrigger>
                     <i:EventTrigger EventName="MouseDoubleClick">
-                        <i:InvokeCommandAction Command="{Binding EditCommand}" CommandParameter="{Binding ElementName=telegramsList, Path=SelectedItem}" />
+                        <cmd:EventToCommand Command="{Binding EditCommand}" CommandParameter="{Binding ElementName=telegramsList, Path=SelectedItem}" />
                     </i:EventTrigger>
                 </i:Interaction.Triggers>
 
