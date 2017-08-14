@@ -5,36 +5,8 @@ namespace Telegraph
 {
     public class RelayCommand : ICommand
     {
-        #region Fields
-
-        readonly Action<object> _execute;
-        readonly Predicate<object> _canExecute;
-
-        #endregion
-
-        #region Constructors
-
-        public RelayCommand(Action<object> execute)
-            : this(execute, null)
-        {
-        }
-
-        public RelayCommand(Action<object> execute, Predicate<object> canExecute)
-        {
-            if (execute == null)
-                throw new ArgumentNullException("execute");
-
-            _execute = execute;
-            _canExecute = canExecute;
-        }
-        #endregion
-
-        #region ICommand Members
-
-        public bool CanExecute(object parameter)
-        {
-            return _canExecute == null ? true : _canExecute(parameter);
-        }
+        private Action<object> execute;
+        private Func<object, bool> canExecute;
 
         public event EventHandler CanExecuteChanged
         {
@@ -42,12 +14,20 @@ namespace Telegraph
             remove { CommandManager.RequerySuggested -= value; }
         }
 
-        public void Execute(object parameter)
+        public RelayCommand(Action<object> execute, Func<object, bool> canExecute = null)
         {
-            _execute(parameter);
+            this.execute = execute;
+            this.canExecute = canExecute;
         }
 
-        #endregion
-    }
+        public bool CanExecute(object parameter)
+        {
+            return this.canExecute == null || this.canExecute(parameter);
+        }
 
+        public void Execute(object parameter)
+        {
+            this.execute(parameter);
+        }
+    }
 }

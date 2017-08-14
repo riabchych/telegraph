@@ -1,16 +1,11 @@
-﻿using GalaSoft.MvvmLight.Views;
-using IFilterTextReader;
-using Microsoft.Practices.ServiceLocation;
+﻿using IFilterTextReader;
 using Microsoft.Win32;
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Data.Entity;
 using System.Globalization;
 using System.IO;
-using System.Runtime.CompilerServices;
 using System.Text.RegularExpressions;
-using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 
@@ -55,6 +50,17 @@ namespace Telegraph
             set { SetValue(() => Telegrams, value); }
         }
 
+        public int EditSelfNum
+        {
+            get { return GetValue(() => EditSelfNum); }
+            set { SetValue(() => EditSelfNum, value); }
+        }
+
+        public int EditIncNum
+        {
+            get { return GetValue(() => EditIncNum); }
+            set { SetValue(() => EditIncNum, value); }
+        }
 
         public bool IsBusy
         {
@@ -73,7 +79,7 @@ namespace Telegraph
                       Db = new ApplicationContext();
                       DbTask = Task.Factory.StartNew(async () =>
                       {
-                          
+
                           Db.Telegrams.Load();
 
                           await DbTask;
@@ -93,8 +99,30 @@ namespace Telegraph
                 return newCommand ??
                     (newCommand = new RelayCommand((o) =>
                     {
+                        EditIncNum = 0;
+                        EditSelfNum = 0;
                         OpenTlgWnd(new Telegram());
                     }));
+            }
+        }
+
+        // команда редактирования
+        public RelayCommand EditCommand
+        {
+            get
+            {
+                return editCommand ??
+                  (editCommand = new RelayCommand((selectedItem) =>
+                  {
+                      if (selectedItem == null) return;
+                      // получаем выделенный объект
+                      Telegram tlg = selectedItem as Telegram;
+                      tlg = (Telegram)tlg.Clone();
+                      EditIncNum = tlg.IncNum;
+                      EditSelfNum = tlg.SelfNum;
+                      OpenTlgWnd(tlg);
+
+                  }));
             }
         }
 
@@ -111,16 +139,17 @@ namespace Telegraph
                       if (o == null)
                       {
                           // Create OpenFileDialog 
-                          OpenFileDialog dlg = new OpenFileDialog();
-
-                          // Set filter for file extension and default file extension 
-                          dlg.DefaultExt = ".doc";
-                          dlg.Filter = "Word Files (*.doc)|*.doc|Word Files (*.docx)|*.docx|Всі файли (*.*)|*.*";
-                          dlg.CheckFileExists = true;
-                          dlg.Multiselect = true;
+                          OpenFileDialog dlg = new OpenFileDialog()
+                          {
+                              // Set filter for file extension and default file extension 
+                              DefaultExt = ".doc",
+                              Filter = "Word Files (*.doc)|*.doc|Word Files (*.docx)|*.docx|Всі файли (*.*)|*.*",
+                              CheckFileExists = true,
+                              Multiselect = true
+                          };
 
                           // Display OpenFileDialog by calling ShowDialog method 
-                          Nullable<bool> result = dlg.ShowDialog();
+                          bool? result = dlg.ShowDialog();
 
 
                           // Get the selected file name and display in a TextBox 
@@ -128,6 +157,8 @@ namespace Telegraph
                           {
                               // Open document 
                               files = dlg.FileNames;
+                              EditIncNum = 0;
+                              EditSelfNum = 0;
                               InsertIntoDb(files);
                           }
                       }
@@ -135,9 +166,11 @@ namespace Telegraph
                       {
                           DragEventArgs e = o as DragEventArgs;
                           files = (string[])e.Data.GetData(DataFormats.FileDrop);
+                          EditIncNum = 0;
+                          EditSelfNum = 0;
                           InsertIntoDb(files);
                       }
-                      
+
                   }));
             }
         }
@@ -260,9 +293,10 @@ namespace Telegraph
 
                     db.Entry(tlg).State = EntityState.Modified;
                 }
+                db.SaveChanges();
             }
 
-            db.SaveChanges();
+
         }
 
         private bool CheckData(Telegram data)
@@ -287,32 +321,7 @@ namespace Telegraph
             }
         }
 
-        // команда редактирования
-        public RelayCommand EditCommand
-        {
-            get
-            {
-                return editCommand ??
-                  (editCommand = new RelayCommand((selectedItem) =>
-                  {
-                      if (selectedItem == null) return;
-                      // получаем выделенный объект
-                      Telegram telegram = selectedItem as Telegram;
-
-                      OpenTlgWnd(telegram);
-
-                  }));
-            }
-        }
-
         public ApplicationContext Db { get => db; set => db = value; }
         public Task DbTask { get => dbTask; set => dbTask = value; }
-
-        public event PropertyChangedEventHandler PropertyChanged;
-        public void OnPropertyChanged([CallerMemberName]string prop = "")
-        {
-            if (PropertyChanged != null)
-                PropertyChanged(this, new PropertyChangedEventArgs(prop));
-        }
     }
 }

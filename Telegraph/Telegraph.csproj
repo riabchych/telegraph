@@ -115,8 +115,7 @@
       <SubType>Designer</SubType>
     </ApplicationDefinition>
     <Compile Include="CustomValidationAttributes\ExcludeChar.cs" />
-    <Compile Include="CustomValidationAttributes\UnqiueIncNum.cs" />
-    <Compile Include="CustomValidationAttributes\UnqiueSelfNum.cs" />
+    <Compile Include="CustomValidationAttributes\Unique.cs" />
     <Compile Include="ViewModels\ApplicationViewModel.cs" />
     <Compile Include="Notification\PropertyChangeNotification.cs" />
     <Compile Include="Comands\RelayCommand.cs" />
@@ -125,7 +124,6 @@
       <DependentUpon>TelegramWnd.xaml</DependentUpon>
     </Compile>
     <Compile Include="UrgencyConverter.cs" />
-    <Compile Include="User.cs" />
     <Compile Include="ViewModels\MainViewModel.cs" />
     <Compile Include="ViewModels\ViewModelLocator.cs" />
     <Page Include="TelegramWnd.xaml">

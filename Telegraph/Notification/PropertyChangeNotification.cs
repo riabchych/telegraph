@@ -5,8 +5,6 @@ using System.ComponentModel.DataAnnotations;
 using System.Diagnostics;
 using System.Linq;
 using System.Linq.Expressions;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Telegraph
 {
@@ -76,8 +74,7 @@ namespace Telegraph
                 throw new ArgumentException("Invalid property name", propertyName);
             }
 
-            object value;
-            if (!_values.TryGetValue(propertyName, out value))
+            if (!_values.TryGetValue(propertyName, out object value))
             {
                 value = default(T);
                 _values.Add(propertyName, value);
@@ -190,8 +187,7 @@ namespace Telegraph
 
         private object GetValue(string propertyName)
         {
-            object value;
-            if (!_values.TryGetValue(propertyName, out value))
+            if (!_values.TryGetValue(propertyName, out object value))
             {
                 var propertyDescriptor = TypeDescriptor.GetProperties(GetType()).Find(propertyName, false);
                 if (propertyDescriptor == null)

@@ -1,18 +1,16 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using Telegraph.CustomValidationAttributes;
 
 namespace Telegraph
 {
 
-    public class Telegram : PropertyChangedNotification
+    public class Telegram : PropertyChangedNotification, ICloneable
     {
 
         public int Id { get; set; }
 
-        //[UnqiueSelfNum(ErrorMessage = "Телеграма з даним ID вже існує")]
+        [Unique("SelfNum", ErrorMessage = "Телеграма з даним ID вже існує")]
         [Required(AllowEmptyStrings = false, ErrorMessage = "Поле не повинно бути пустим")]
         [Range(1, 1000000, ErrorMessage = "Значення повинно бути від 1 до 1000000")]
         public int SelfNum
@@ -21,6 +19,7 @@ namespace Telegraph
             set { SetValue(() => SelfNum, value); }
         }
 
+        [Unique("IncNum", ErrorMessage = "Телеграма з даним вхідним номером вже існує")]
         [Required(AllowEmptyStrings = false, ErrorMessage = "Поле не повинно бути пустим")]
         [Range(1, 1000000, ErrorMessage = "Значення повинно бути від 1 до 1000000")]
         public int IncNum
@@ -119,6 +118,29 @@ namespace Telegraph
         {
             get { return GetValue(() => Time); }
             set { SetValue(() => Time, value); }
+        }
+
+        public object Clone()
+        {
+            return new Telegram
+            {
+                Id = this.Id,
+                SelfNum = this.SelfNum,
+                IncNum = this.IncNum,
+                To = this.To,
+                Text = this.Text,
+                SubNum = this.SubNum,
+                Date = this.Date,
+                SenderPos = this.SenderPos,
+                SenderRank = this.SenderRank,
+                SenderName = this.SenderName,
+                Executor = this.Executor,
+                Phone = this.Phone,
+                HandedBy = this.HandedBy,
+                Urgency = this.Urgency,
+                Dispatcher = this.Dispatcher,
+                Time = this.Time
+            };
         }
     }
 }

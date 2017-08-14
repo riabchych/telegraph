@@ -8,7 +8,6 @@ namespace Telegraph
         public ApplicationContext() : base("DefaultConnection")
         {
         }
-        public DbSet<User> Users { get; set; }
         public DbSet<Telegram> Telegrams { get; set; }
     }
 }
