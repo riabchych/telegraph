@@ -32,11 +32,11 @@ namespace Telegraph
         public static string UrgencyRegex => urgencyRegex;
     }
 
-    public class ApplicationViewModel : INotifyPropertyChanged
+    public class ApplicationViewModel : PropertyChangedNotification
     {
         private ApplicationContext db;
-        private IEnumerable<Telegram> telegrams;
         private Task dbTask;
+        private static ApplicationViewModel applicationViewModel;
 
         RelayCommand newCommand;
         RelayCommand addCommand;
@@ -44,34 +44,22 @@ namespace Telegraph
         RelayCommand deleteCommand;
         RelayCommand windowLoaded;
 
-        private bool isBusy = false;
+        public static ApplicationViewModel SharedViewModel()
+        {
+            return applicationViewModel ?? (applicationViewModel = new ApplicationViewModel());
+        }
 
         public IEnumerable<Telegram> Telegrams
         {
-            get
-            {
-                return telegrams;
-            }
-
-            set
-            {
-                telegrams = value;
-                OnPropertyChanged("Telegrams");
-            }
+            get { return GetValue(() => Telegrams); }
+            set { SetValue(() => Telegrams, value); }
         }
+
 
         public bool IsBusy
         {
-            get
-            {
-                return isBusy;
-            }
-
-            set
-            {
-                isBusy = value;
-                OnPropertyChanged("IsBusy");
-            }
+            get { return GetValue(() => IsBusy); }
+            set { SetValue(() => IsBusy, value); }
         }
 
         public RelayCommand WindowLoaded

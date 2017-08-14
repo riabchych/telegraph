@@ -47,17 +47,17 @@
             <ToolBarTray Grid.Row="1" ScrollViewer.VerticalScrollBarVisibility="Disabled" Grid.IsSharedSizeScope="True" VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
                 <ToolBar Height="32" HorizontalAlignment="Stretch">
                     <Button ToolTip="Створити" Command="{Binding NewCommand}" CommandParameter="" VerticalAlignment="Stretch" Margin="0,0,5,-3" >
-                        <Image Source="icons/page_white.png"></Image>
+                        <Image Source="Icons/page_white.png"></Image>
                     </Button>
                     <Button ToolTip="Додати" Command="{Binding AddCommand}"  VerticalAlignment="Stretch" Margin="0,0,5,-3" >
-                        <Image Source="icons/page_white_add.png"></Image>
+                        <Image Source="Icons/page_white_add.png"></Image>
                     </Button>
                     <Button ToolTip="Редагувати" Command="{Binding EditCommand}" IsEnabled="{Binding ElementName=telegramsList, Path=SelectedItems.Count}" CommandParameter="{Binding ElementName=telegramsList, Path=SelectedItem}" VerticalAlignment="Stretch" Margin="0,0,5,-3" >
-                        <Image Source="icons/page_white_edit.png"></Image>
+                        <Image Source="Icons/page_white_edit.png"></Image>
                     </Button>
 
                     <Button ToolTip="Видалити" Command="{Binding DeleteCommand}" IsEnabled="{Binding ElementName=telegramsList, Path=SelectedItems.Count}" CommandParameter="{Binding ElementName=telegramsList, Path=SelectedItem}" VerticalAlignment="Stretch" Margin="0,0,5,-3">
-                        <Image Source="icons/page_white_delete.png"></Image>
+                        <Image Source="Icons/page_white_delete.png"></Image>
                     </Button>
                 </ToolBar>
             </ToolBarTray>
