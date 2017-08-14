@@ -178,7 +178,7 @@ namespace Telegraph
                 {
                     string docText = reader.ReadToEnd().ToUpper();
 
-                    //if (string.IsNullOrWhiteSpace(docText)) continue;
+                    if (string.IsNullOrWhiteSpace(docText)) throw new Exception("Документ якиий Ви намагаєтемь відкрити не містить данних."); ;
 
                     string regexString = string.Concat(TlgRegex.BasePartRegex, TlgRegex.FirstPartRegex);
                     Regex regex = new Regex(regexString, RegexOptions.Multiline);
