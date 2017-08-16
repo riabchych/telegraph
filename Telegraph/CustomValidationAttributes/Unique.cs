@@ -5,60 +5,26 @@ namespace Telegraph.CustomValidationAttributes
 {
     public class Unique : ValidationAttribute
     {
-        private readonly string field;
-
-        public Unique(string val)
-        {
-            field = val;
-        }
-
         protected override ValidationResult IsValid(object value, ValidationContext validationContext)
         {
-            int val = int.Parse(value.ToString());
-            bool result = false;
+            int count = 0, val = int.Parse(value.ToString());
+            ApplicationViewModel vm = ApplicationViewModel.SharedViewModel();
+            Telegram instance = (Telegram)validationContext.ObjectInstance;
 
-            switch (field)
+            switch (validationContext.MemberName)
             {
                 case "SelfNum":
-                    if (val != ApplicationViewModel.SharedViewModel().EditSelfNum)
-                    {
-                        if (ApplicationViewModel.SharedViewModel().Telegrams.Select(x => x.SelfNum).Contains(val))
-                        {
-                            result = false;
-                        }
-                        else
-                        {
-                            result = true;
-                        }
-                    }
-                    else
-                    {
-                        result = true;
-                    }
+                    count = vm.Telegrams.Where(x => x.SelfNum.Equals(val) && !x.Id.Equals(instance.Id)).Count();
                     break;
                 case "IncNum":
-                    if (val != ApplicationViewModel.SharedViewModel().EditIncNum)
-                    {
-                        if (ApplicationViewModel.SharedViewModel().Telegrams.Select(x => x.IncNum).Contains(val))
-                        {
-                            result = false;
-                        }
-                        else
-                        {
-                            result = true;
-                        }
-                    }
-                    else
-                    {
-                        result = true;
-                    }
+                    count = vm.Telegrams.Where(x => x.IncNum.Equals(val) && !x.Id.Equals(instance.Id)).Count();
+                    break;
+                default:
+                    count = 0;
                     break;
             }
 
-            if (!result)
-                return new ValidationResult(FormatErrorMessage(validationContext.DisplayName));
-            else
-                return ValidationResult.Success;
+            return (count > 0) ? new ValidationResult(FormatErrorMessage(validationContext.DisplayName)) : ValidationResult.Success;
         }
     }
 }

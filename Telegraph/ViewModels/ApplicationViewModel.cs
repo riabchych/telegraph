@@ -50,18 +50,6 @@ namespace Telegraph
             set { SetValue(() => Telegrams, value); }
         }
 
-        public int EditSelfNum
-        {
-            get { return GetValue(() => EditSelfNum); }
-            set { SetValue(() => EditSelfNum, value); }
-        }
-
-        public int EditIncNum
-        {
-            get { return GetValue(() => EditIncNum); }
-            set { SetValue(() => EditIncNum, value); }
-        }
-
         public bool IsBusy
         {
             get { return GetValue(() => IsBusy); }
@@ -99,8 +87,6 @@ namespace Telegraph
                 return newCommand ??
                     (newCommand = new RelayCommand((o) =>
                     {
-                        EditIncNum = 0;
-                        EditSelfNum = 0;
                         OpenTlgWnd(new Telegram());
                     }));
             }
@@ -118,8 +104,6 @@ namespace Telegraph
                       // получаем выделенный объект
                       Telegram tlg = selectedItem as Telegram;
                       tlg = (Telegram)tlg.Clone();
-                      EditIncNum = tlg.IncNum;
-                      EditSelfNum = tlg.SelfNum;
                       OpenTlgWnd(tlg);
 
                   }));
@@ -134,7 +118,6 @@ namespace Telegraph
                 return addCommand ??
                   (addCommand = new RelayCommand((o) =>
                   {
-
                       string[] files = null;
                       if (o == null)
                       {
@@ -157,8 +140,6 @@ namespace Telegraph
                           {
                               // Open document 
                               files = dlg.FileNames;
-                              EditIncNum = 0;
-                              EditSelfNum = 0;
                               InsertIntoDb(files);
                           }
                       }
@@ -166,8 +147,6 @@ namespace Telegraph
                       {
                           DragEventArgs e = o as DragEventArgs;
                           files = (string[])e.Data.GetData(DataFormats.FileDrop);
-                          EditIncNum = 0;
-                          EditSelfNum = 0;
                           InsertIntoDb(files);
                       }
 
@@ -275,9 +254,9 @@ namespace Telegraph
                 {
                     tlg = db.Telegrams.Find(telegramWindow.Telegram.Id);
 
+                    tlg.To = telegramWindow.Telegram.To;
                     tlg.SelfNum = telegramWindow.Telegram.SelfNum;
                     tlg.IncNum = telegramWindow.Telegram.IncNum;
-                    tlg.To = telegramWindow.Telegram.To;
                     tlg.Text = telegramWindow.Telegram.Text;
                     tlg.SubNum = telegramWindow.Telegram.SubNum;
                     tlg.Date = telegramWindow.Telegram.Date;

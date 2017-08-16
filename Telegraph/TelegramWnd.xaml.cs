@@ -8,18 +8,17 @@ namespace Telegraph
     public partial class TelegramWnd : Window
     {
         public Telegram Telegram { get; set; }
-
         
         public TelegramWnd(Telegram t)
         {
             InitializeComponent();
             Telegram = t;
-            this.DataContext = Telegram;
+            DataContext = Telegram;
         }
 
         private void Accept_Click(object sender, RoutedEventArgs e)
         {
-            this.DialogResult = true;
+            DialogResult = true;
         }
     }
 }

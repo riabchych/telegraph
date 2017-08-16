@@ -10,7 +10,7 @@ namespace Telegraph
 
         public int Id { get; set; }
 
-        [Unique("SelfNum", ErrorMessage = "Телеграма з даним ID вже існує")]
+        [Unique(ErrorMessage = "Телеграма з даним ID вже існує")]
         [Required(AllowEmptyStrings = false, ErrorMessage = "Поле не повинно бути пустим")]
         [Range(1, 1000000, ErrorMessage = "Значення повинно бути від 1 до 1000000")]
         public int SelfNum
@@ -19,7 +19,7 @@ namespace Telegraph
             set { SetValue(() => SelfNum, value); }
         }
 
-        [Unique("IncNum", ErrorMessage = "Телеграма з даним вхідним номером вже існує")]
+        [Unique(ErrorMessage = "Телеграма з даним вхідним номером вже існує")]
         [Required(AllowEmptyStrings = false, ErrorMessage = "Поле не повинно бути пустим")]
         [Range(1, 1000000, ErrorMessage = "Значення повинно бути від 1 до 1000000")]
         public int IncNum
