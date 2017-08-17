@@ -12,7 +12,7 @@
 
     <i:Interaction.Triggers>
         <i:EventTrigger EventName="Loaded">
-            <cmd:EventToCommand Command="{Binding WindowLoaded}" CommandParameter="{Binding ElementName=telegramsList, Path=ItemsSource}"/>
+            <cmd:EventToCommand Command="{Binding WindowLoaded}" CommandParameter="{Binding ElementName=telegramsList}"/>
         </i:EventTrigger>
     </i:Interaction.Triggers>
 
@@ -60,8 +60,12 @@
                         <Image Source="Icons/page_white_delete.png"></Image>
                     </Button>
                 </ToolBar>
+
+                <ToolBar Height="32">
+                    <TextBox Width="100" Text="{Binding FilterText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Margin="0,2,0,0" VerticalAlignment="Top"></TextBox>
+                </ToolBar>
             </ToolBarTray>
-            <ListView Grid.Row="2" x:Name="telegramsList"  ItemsSource="{Binding Telegrams}" VerticalContentAlignment="Center" BorderBrush="Khaki" DragLeave="telegramsList_DragLeave" DragEnter="telegramsList_DragEnter" Drop="telegramsList_Drop">
+            <ListView Grid.Row="2" x:Name="telegramsList"  ItemsSource="{Binding SourceCollection}" VerticalContentAlignment="Center" BorderBrush="Khaki" DragLeave="telegramsList_DragLeave" DragEnter="telegramsList_DragEnter" Drop="telegramsList_Drop">
                 <i:Interaction.Triggers>
                     <i:EventTrigger EventName="Drop">
                         <cmd:EventToCommand Command="{Binding AddCommand}" PassEventArgsToCommand="True"  />

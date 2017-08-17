@@ -2,12 +2,17 @@
 using Microsoft.Win32;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.Data.Entity;
 using System.Globalization;
 using System.IO;
+using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Data;
 
 namespace Telegraph
 {
@@ -44,10 +49,24 @@ namespace Telegraph
             return applicationViewModel ?? (applicationViewModel = new ApplicationViewModel());
         }
 
-        public IEnumerable<Telegram> Telegrams
+        public CollectionViewSource Telegrams
         {
             get { return GetValue(() => Telegrams); }
             set { SetValue(() => Telegrams, value); }
+        }
+
+        public ICollectionView SourceCollection
+        {
+            get { return GetValue(() => Telegrams.View); }
+        }
+
+        public string FilterText
+        {
+            get { return GetValue(() => FilterText); }
+            set {
+                SetValue(() => FilterText, value);
+                Telegrams.View.Refresh();
+            }
         }
 
         public bool IsBusy
@@ -61,22 +80,45 @@ namespace Telegraph
             get
             {
                 return windowLoaded ??
-                  (windowLoaded = new RelayCommand((o) =>
+                  (windowLoaded = new RelayCommand((lv) =>
                   {
+                      ListView listview = lv as ListView;
                       IsBusy = true;
                       Db = new ApplicationContext();
+                      
+
                       DbTask = Task.Factory.StartNew(async () =>
                       {
-
                           Db.Telegrams.Load();
 
                           await DbTask;
-
-                          Telegrams = Db.Telegrams.Local.ToBindingList();
                           IsBusy = false;
 
+                          Telegrams = new CollectionViewSource();
+                          Telegrams.Source = new ObservableCollection<Telegram>(Db.Telegrams.Local.ToBindingList());
+                          Telegrams.Filter += TelegramsFilter;
                       });
                   }));
+            }
+        }
+
+        private void TelegramsFilter(object sender, FilterEventArgs e)
+        {
+            if (string.IsNullOrEmpty(FilterText))
+            {
+                e.Accepted = true;
+                return;
+            }
+
+            Telegram tlg = e.Item as Telegram;
+            if (tlg.HandedBy.ToUpper().Contains(FilterText.ToUpper()))
+            {
+                MessageBox.Show(tlg.HandedBy + " :ok: "+ FilterText);
+                e.Accepted = true;
+            }
+            else
+            {
+                e.Accepted = false;
             }
         }
 
@@ -302,5 +344,7 @@ namespace Telegraph
 
         public ApplicationContext Db { get => db; set => db = value; }
         public Task DbTask { get => dbTask; set => dbTask = value; }
+
+
     }
 }
