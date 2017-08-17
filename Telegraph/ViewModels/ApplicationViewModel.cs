@@ -7,12 +7,12 @@ using System.ComponentModel;
 using System.Data.Entity;
 using System.Globalization;
 using System.IO;
-using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
+using System.Windows.Threading;
 
 namespace Telegraph
 {
@@ -49,23 +49,45 @@ namespace Telegraph
             return applicationViewModel ?? (applicationViewModel = new ApplicationViewModel());
         }
 
-        public CollectionViewSource Telegrams
+        public IEnumerable<Telegram> Telegrams
         {
             get { return GetValue(() => Telegrams); }
             set { SetValue(() => Telegrams, value); }
         }
 
+        ObservableCollection<Telegram> TelegramsCollection
+        {
+            get { return GetValue(() => TelegramsCollection); }
+            set { SetValue(() => TelegramsCollection, value); }
+        }
+
+        public CollectionViewSource TelegramsViewSource
+        {
+            get { return GetValue(() => TelegramsViewSource); }
+            set { SetValue(() => TelegramsViewSource, value); }
+        }
+
         public ICollectionView SourceCollection
         {
-            get { return GetValue(() => Telegrams.View); }
+            get { return TelegramsViewSource.View; }
         }
 
         public string FilterText
         {
             get { return GetValue(() => FilterText); }
-            set {
+            set
+            {
                 SetValue(() => FilterText, value);
-                Telegrams.View.Refresh();
+                TelegramsViewSource.View.Refresh();
+            }
+        }
+
+        public int FilterType
+        {
+            get { return GetValue(() => FilterType); }
+            set
+            {
+                SetValue(() => FilterType, value);
             }
         }
 
@@ -85,21 +107,33 @@ namespace Telegraph
                       ListView listview = lv as ListView;
                       IsBusy = true;
                       Db = new ApplicationContext();
-                      
 
+                      TelegramsViewSource = new CollectionViewSource();
                       DbTask = Task.Factory.StartNew(async () =>
                       {
-                          Db.Telegrams.Load();
+
+                          Application.Current.Dispatcher.Invoke(DispatcherPriority.Send, (Action)delegate ()
+                          {
+                              Db.Telegrams.Load();
+                          });
 
                           await DbTask;
-                          IsBusy = false;
 
-                          Telegrams = new CollectionViewSource();
-                          Telegrams.Source = new ObservableCollection<Telegram>(Db.Telegrams.Local.ToBindingList());
-                          Telegrams.Filter += TelegramsFilter;
+                          Application.Current.Dispatcher.Invoke(DispatcherPriority.Normal, (Action)delegate ()
+                          {
+                              IsBusy = false;
+                              Telegrams = Db.Telegrams.Local.ToBindingList();
+                              TelegramsViewSource.Source = new ObservableCollection<Telegram>(Telegrams);
+                              TelegramsViewSource.Filter += TelegramsFilter;
+                          });
+
                       });
                   }));
             }
+        }
+        public void RefreshViewSource()
+        {
+            TelegramsViewSource.Source = new ObservableCollection<Telegram>(Telegrams);
         }
 
         private void TelegramsFilter(object sender, FilterEventArgs e)
@@ -111,15 +145,58 @@ namespace Telegraph
             }
 
             Telegram tlg = e.Item as Telegram;
-            if (tlg.HandedBy.ToUpper().Contains(FilterText.ToUpper()))
+            string result = null;
+            switch (FilterType)
             {
-                MessageBox.Show(tlg.HandedBy + " :ok: "+ FilterText);
+                case 0:
+                    result = tlg.HandedBy.ToString();
+                    break;
+                case 1:
+                    result = tlg.IncNum.ToString();
+                    break;
+                case 2:
+                    result = tlg.To.ToString();
+                    break;
+                case 3:
+                    result = tlg.Text.ToString();
+                    break;
+                case 4:
+                    result = tlg.SubNum.ToString();
+                    break;
+                case 5:
+                    result = tlg.Date.ToString();
+                    break;
+                case 6:
+                    result = tlg.SenderPos.ToString();
+                    break;
+                case 7:
+                    result = tlg.SenderRank.ToString();
+                    break;
+                case 8:
+                    result = tlg.SenderName.ToString();
+                    break;
+                case 9:
+                    result = tlg.Executor.ToString();
+                    break;
+                case 10:
+                    result = tlg.Phone.ToString();
+                    break;
+                case 11:
+                    result = tlg.HandedBy.ToString();
+                    break;
+                case 12:
+                    result = tlg.Dispatcher.ToString();
+                    break;
+                default:
+                    result = null;
+                    break;
+            }
+            if (result == null)
                 e.Accepted = true;
-            }
             else
-            {
-                e.Accepted = false;
-            }
+                e.Accepted = (result.ToUpper().Contains(FilterText.ToUpper())) 
+                    ? true : false;
+
         }
 
         public RelayCommand NewCommand
@@ -205,8 +282,9 @@ namespace Telegraph
                     {
                         if (selectedItem == null) return;
                         Telegram tlg = selectedItem as Telegram;
-                        db.Telegrams.Remove(tlg);
-                        db.SaveChanges();
+                        Db.Telegrams.Remove(tlg);
+                        Db.SaveChanges();
+                        RefreshViewSource();
                     }));
             }
         }
@@ -290,11 +368,11 @@ namespace Telegraph
             {
                 if (isNew)
                 {
-                    db.Telegrams.Add(telegramWindow.Telegram);
+                    Db.Telegrams.Add(telegramWindow.Telegram);
                 }
                 else
                 {
-                    tlg = db.Telegrams.Find(telegramWindow.Telegram.Id);
+                    tlg = Db.Telegrams.Find(telegramWindow.Telegram.Id);
 
                     tlg.To = telegramWindow.Telegram.To;
                     tlg.SelfNum = telegramWindow.Telegram.SelfNum;
@@ -312,9 +390,10 @@ namespace Telegraph
                     tlg.Dispatcher = telegramWindow.Telegram.Dispatcher;
                     tlg.Time = telegramWindow.Telegram.Time;
 
-                    db.Entry(tlg).State = EntityState.Modified;
+                    Db.Entry(tlg).State = EntityState.Modified;
                 }
-                db.SaveChanges();
+                Db.SaveChanges();
+                RefreshViewSource();
             }
 
 

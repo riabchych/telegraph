@@ -10,6 +10,9 @@
         mc:Ignorable="d"
         Title="Центр керування телеграмами" Height="520" Width="600" AllowDrop="True">
 
+    <Window.DataContext>
+        <local:ApplicationViewModel x:Name="VM" />
+    </Window.DataContext>
     <i:Interaction.Triggers>
         <i:EventTrigger EventName="Loaded">
             <cmd:EventToCommand Command="{Binding WindowLoaded}" CommandParameter="{Binding ElementName=telegramsList}"/>
@@ -61,11 +64,32 @@
                     </Button>
                 </ToolBar>
 
+
+
                 <ToolBar Height="32">
-                    <TextBox Width="100" Text="{Binding FilterText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Margin="0,2,0,0" VerticalAlignment="Top"></TextBox>
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="Фільтр по:"  VerticalAlignment="Center" Height="18" Margin="0,6,0,3" HorizontalAlignment="Left"/>
+                        <ComboBox Width="100" IsReadOnly="True" SelectedIndex="{Binding FilterType, UpdateSourceTrigger=PropertyChanged, Mode=OneWayToSource}" Margin="0,2,0,3" HorizontalAlignment="Left" VerticalAlignment="Center">
+                            <ComboBoxItem>ID</ComboBoxItem>
+                            <ComboBoxItem>Вхідний номер</ComboBoxItem>
+                            <ComboBoxItem>Отримувач</ComboBoxItem>
+                            <ComboBoxItem>Текст</ComboBoxItem>
+                            <ComboBoxItem>Підписний</ComboBoxItem>
+                            <ComboBoxItem>Дата</ComboBoxItem>
+                            <ComboBoxItem>Посада відпр.</ComboBoxItem>
+                            <ComboBoxItem>Звання відпр.</ComboBoxItem>
+                            <ComboBoxItem>Ім'я відпр.</ComboBoxItem>
+                            <ComboBoxItem>Виконавець</ComboBoxItem>
+                            <ComboBoxItem>Тел. виконавця</ComboBoxItem>
+                            <ComboBoxItem>Передав</ComboBoxItem>
+                            <ComboBoxItem>Прийняв</ComboBoxItem>
+                        </ComboBox>
+                        <TextBox Width="170" Text="{Binding FilterText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Margin="0,2,0,0" VerticalAlignment="Top"></TextBox>
+                    </StackPanel>
+
                 </ToolBar>
             </ToolBarTray>
-            <ListView Grid.Row="2" x:Name="telegramsList"  ItemsSource="{Binding SourceCollection}" VerticalContentAlignment="Center" BorderBrush="Khaki" DragLeave="telegramsList_DragLeave" DragEnter="telegramsList_DragEnter" Drop="telegramsList_Drop">
+            <ListView Grid.Row="2" x:Name="telegramsList"  ItemsSource="{Binding TelegramsViewSource.View}" VerticalContentAlignment="Center" BorderBrush="Khaki" DragLeave="telegramsList_DragLeave" DragEnter="telegramsList_DragEnter" Drop="telegramsList_Drop">
                 <i:Interaction.Triggers>
                     <i:EventTrigger EventName="Drop">
                         <cmd:EventToCommand Command="{Binding AddCommand}" PassEventArgsToCommand="True"  />

@@ -14,10 +14,10 @@ namespace Telegraph.CustomValidationAttributes
             switch (validationContext.MemberName)
             {
                 case "SelfNum":
-                    //count = vm.Telegrams.Where(x => x.SelfNum.Equals(val) && !x.Id.Equals(instance.Id)).Count();
+                    count = vm.Telegrams.Where(x => x.SelfNum.Equals(val) && !x.Id.Equals(instance.Id)).Count();
                     break;
                 case "IncNum":
-                    //count = vm.Telegrams.Where(x => x.IncNum.Equals(val) && !x.Id.Equals(instance.Id)).Count();
+                    count = vm.Telegrams.Where(x => x.IncNum.Equals(val) && !x.Id.Equals(instance.Id)).Count();
                     break;
                 default:
                     count = 0;
