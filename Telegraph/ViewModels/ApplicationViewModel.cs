@@ -97,6 +97,12 @@ namespace Telegraph
             set { SetValue(() => IsBusy, value); }
         }
 
+        public bool IsImport
+        {
+            get { return GetValue(() => IsImport); }
+            set { SetValue(() => IsImport, value); }
+        }
+
         public RelayCommand WindowLoaded
         {
             get
@@ -106,16 +112,12 @@ namespace Telegraph
                   {
                       ListView listview = lv as ListView;
                       IsBusy = true;
+                      FilterType = 3;
                       Db = new ApplicationContext();
-
                       TelegramsViewSource = new CollectionViewSource();
                       DbTask = Task.Factory.StartNew(async () =>
                       {
-
-                          Application.Current.Dispatcher.Invoke(DispatcherPriority.Send, (Action)delegate ()
-                          {
-                              Db.Telegrams.Load();
-                          });
+                          Db.Telegrams.Load();
 
                           await DbTask;
 
@@ -146,10 +148,11 @@ namespace Telegraph
 
             Telegram tlg = e.Item as Telegram;
             string result = null;
+
             switch (FilterType)
             {
                 case 0:
-                    result = tlg.HandedBy.ToString();
+                    result = tlg.SelfNum.ToString();
                     break;
                 case 1:
                     result = tlg.IncNum.ToString();
@@ -238,6 +241,7 @@ namespace Telegraph
                   (addCommand = new RelayCommand((o) =>
                   {
                       string[] files = null;
+                      var x = o.GetType();
                       if (o == null)
                       {
                           // Create OpenFileDialog 

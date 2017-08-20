@@ -8,8 +8,13 @@
         xmlns:local="clr-namespace:Telegraph"
         xmlns:extToolkit="http://schemas.xceed.com/wpf/xaml/toolkit"
         mc:Ignorable="d"
-        Title="Центр керування телеграмами" Height="520" Width="600" AllowDrop="True">
+        Title="Центр керування телеграмами" Height="500" Width="600" AllowDrop="True">
 
+    <Window.Resources>
+        <Style TargetType="ToolTip" x:Key="InternalToolTipStyle">
+            <Setter Property="MaxWidth" Value="400" />
+        </Style>
+    </Window.Resources>
     <Window.DataContext>
         <local:ApplicationViewModel x:Name="VM" />
     </Window.DataContext>
@@ -32,7 +37,7 @@
                     <MenuItem Header="Створити" Command="{Binding NewCommand}"/>
                     <MenuItem Header="Відкрити" Command="{Binding AddCommand}"/>
                     <Separator/>
-                    <MenuItem Header="Імпорт"/>
+                    <MenuItem Header="Імпорт" Command="{Binding ImportCommand}" />
                     <MenuItem Header="Експорт"/>
                     <Separator/>
                     <MenuItem Header="Вихід"/>
@@ -55,21 +60,41 @@
                     <Button ToolTip="Додати" Command="{Binding AddCommand}"  VerticalAlignment="Stretch" Margin="0,0,5,-3" >
                         <Image Source="Icons/page_white_add.png"></Image>
                     </Button>
-                    <Button ToolTip="Редагувати" Command="{Binding EditCommand}" IsEnabled="{Binding ElementName=telegramsList, Path=SelectedItems.Count}" CommandParameter="{Binding ElementName=telegramsList, Path=SelectedItem}" VerticalAlignment="Stretch" Margin="0,0,5,-3" >
-                        <Image Source="Icons/page_white_edit.png"></Image>
+
+                    <Separator/>
+
+                    <Button ToolTip="Редагувати" Command="{Binding EditCommand}" IsEnabled="{Binding SelectedItems.Count, ElementName=telegramsList}" CommandParameter="{Binding SelectedItem, ElementName=telegramsList}" VerticalAlignment="Stretch" Margin="0,0,5,-3" >
+                        <Image Source="Icons/page_white_edit.png"/>
                     </Button>
 
                     <Button ToolTip="Видалити" Command="{Binding DeleteCommand}" IsEnabled="{Binding ElementName=telegramsList, Path=SelectedItems.Count}" CommandParameter="{Binding ElementName=telegramsList, Path=SelectedItem}" VerticalAlignment="Stretch" Margin="0,0,5,-3">
                         <Image Source="Icons/page_white_delete.png"></Image>
                     </Button>
+
+                    <Separator/>
+
+                    <Button ToolTip="Відкрити в  Word" Command="{Binding}" IsEnabled="{Binding ElementName=telegramsList, Path=SelectedItems.Count}" CommandParameter="{Binding ElementName=telegramsList, Path=SelectedItem}" VerticalAlignment="Stretch" Margin="0,0,5,-3">
+                        <Image Source="Icons/page_white_word.png"></Image>
+                    </Button>
+
+                    <Button ToolTip="Друк" Command="{Binding DeleteCommand}" IsEnabled="{Binding ElementName=telegramsList, Path=SelectedItems.Count}" CommandParameter="{Binding ElementName=telegramsList, Path=SelectedItem}" VerticalAlignment="Stretch" Margin="0,0,5,-3">
+                        <Image Source="Icons/printer.png"></Image>
+                    </Button>
+
                 </ToolBar>
 
 
 
-                <ToolBar Height="32">
-                    <StackPanel Orientation="Horizontal">
-                        <TextBlock Text="Фільтр по:"  VerticalAlignment="Center" Height="18" Margin="0,6,0,3" HorizontalAlignment="Left"/>
-                        <ComboBox Width="100" IsReadOnly="True" SelectedIndex="{Binding FilterType, UpdateSourceTrigger=PropertyChanged, Mode=OneWayToSource}" Margin="0,2,0,3" HorizontalAlignment="Left" VerticalAlignment="Center">
+                <ToolBar Height="32" Margin="0,0,-26,0">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="100" />
+                            <ColumnDefinition Width="174" />
+                        </Grid.ColumnDefinitions>
+
+                        <TextBlock Text="Фільтр:" HorizontalAlignment="Left" Width="39" Margin="0,4,4,6" />
+                        <ComboBox Grid.Column="1" IsReadOnly="True" SelectedIndex="{Binding FilterType, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}" Margin="0,2,0,2">
                             <ComboBoxItem>ID</ComboBoxItem>
                             <ComboBoxItem>Вхідний номер</ComboBoxItem>
                             <ComboBoxItem>Отримувач</ComboBoxItem>
@@ -84,9 +109,8 @@
                             <ComboBoxItem>Передав</ComboBoxItem>
                             <ComboBoxItem>Прийняв</ComboBoxItem>
                         </ComboBox>
-                        <TextBox Width="170" Text="{Binding FilterText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Margin="0,2,0,0" VerticalAlignment="Top"></TextBox>
-                    </StackPanel>
-
+                        <TextBox Grid.Column="2" Text="{Binding FilterText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Margin="4,3,0,3"/>
+                    </Grid>
                 </ToolBar>
             </ToolBarTray>
             <ListView Grid.Row="2" x:Name="telegramsList"  ItemsSource="{Binding TelegramsViewSource.View}" VerticalContentAlignment="Center" BorderBrush="Khaki" DragLeave="telegramsList_DragLeave" DragEnter="telegramsList_DragEnter" Drop="telegramsList_Drop">
@@ -105,8 +129,8 @@
                         <GridViewColumn Width="75" Header="Номер"  DisplayMemberBinding="{Binding IncNum}"  />
                         <GridViewColumn Width="100" Header="Підписний"  DisplayMemberBinding="{Binding SubNum}" />
                         <GridViewColumn Width="70" Header="Дата" DisplayMemberBinding="{Binding Date}" />
-                        <GridViewColumn Width="100" Header="Виконавець"  DisplayMemberBinding="{Binding Executor}" />
-                        <GridViewColumn Width="100" Header="Еспедитор"  DisplayMemberBinding="{Binding Dispatcher}" />
+                        <GridViewColumn Width="90" Header="Виконавець"  DisplayMemberBinding="{Binding Executor}" />
+                        <GridViewColumn Width="90" Header="Еспедитор"  DisplayMemberBinding="{Binding Dispatcher}" />
                         <GridViewColumn Width="80" Header="Терміновість"  DisplayMemberBinding="{Binding Urgency}" />
                     </GridView>
                 </ListView.View>
@@ -116,9 +140,10 @@
                         <Setter Property="HorizontalContentAlignment" Value="Left" />
                     </Style>
                 </ListView.Resources>
+
                 <ListView.ItemContainerStyle>
                     <Style TargetType="{x:Type ListViewItem}">
-                        <Setter Property="ToolTip" Value="{Binding Text}"/>
+                        <Setter Property="ToolTip" Value="{Binding Text}" />
                         <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
                     </Style>
 
@@ -143,7 +168,7 @@
                     <TextBlock Name="StatusIndicator" Text="Готово"></TextBlock>
                 </StatusBarItem>
                 <StatusBarItem Grid.Column="1">
-                    <ProgressBar Width="100" Height="17" Name="ProgressBar" VerticalAlignment="Center" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" HorizontalAlignment="Right">
+                    <!--<ProgressBar Width="100" Height="17" Name="ProgressBar" VerticalAlignment="Center" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" HorizontalAlignment="Right">
                         <ProgressBar.Background>
                             <LinearGradientBrush EndPoint="1,0" StartPoint="0,0">
                                 <GradientStop Color="#FFBABABA" Offset="0"/>
@@ -151,7 +176,7 @@
                                 <GradientStop Color="#FFBABABA" Offset="1"/>
                             </LinearGradientBrush>
                         </ProgressBar.Background>
-                    </ProgressBar>
+                    </ProgressBar>-->
                 </StatusBarItem>
             </StatusBar>
         </Grid>
