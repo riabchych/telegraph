@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Data.Entity;
+using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Text.RegularExpressions;
@@ -20,7 +21,7 @@ namespace Telegraph
     {
         private const string firstPartRegex = @"^ВИК[\s\.]+([ЙЦУКЕНГШЩЗХЇЄЖДЛОРПАВІФЯЧСМИТЬБЮ0-9]+){1}[\s]+([0-9\-\:]+){1}[\s]*$[\n\r\s\-]+^ПРД[\s\.]+([ЙЦУКЕНГШЩЗХЇЄЖДЛОРПАВІФЯЧСМИТЬБЮ0-9]+){1}";
         private const string secondPartRegex = @"^ПРД[\s\.]+([ЙЦУКЕНГШЩЗХЇЄЖДЛОРПАВІФЯЧСМИТЬБЮ0-9]+)[\s]*$[\s\r\n]+^ВИК[\s\.]+([ЙЦУКЕНГШЩЗХЇЄЖДЛОРПАВІФЯЧСМИТЬБЮ0-9]+){1}[\s]+([0-9\-\:]+)[\s]?";
-        private const string basePartRegex = @"^[\.]?[\w\W]*.НР[\s\.]*([0-9]*){1}[\s]*$[\n\r]+^[ЙЦУКЕНГШЩЗХЇЄЖДЛОРПАВІФЯЧСМИТЬБЮ\s\/]+([ЙЦУКЕНГШЩЗХЇЄЖДЛОРПАВІФЯЧСМИТЬБЮ\d\s]+)$[\n\r]+^([ЙЦУКЕНГШЩЗХЇЄЖДЛОРПАВІФЯЧСМИТЬБЮ\w\d\W\n\r]+)^[\s]*НР\.[\s]*([\d\/\s\-]+[\s]*[\d]+)[\s]+([ЙЦУКЕНГШЩЗХЇЄЖДЛОРПАВІФЯЧСМИТЬБЮ\s\.\-0-9]+)^([\d]+[\s\.\\]+[\d]+[\s\.\\]+[\d]+)[\s]*([ЙЦУКЕНГШЩЗХЇЄЖДЛОРПАВІФЯЧСМИТЬБЮ\s\-0-9]+)$[\n\r\s]+([ЙЦУКЕНГШЩЗХЇЄЖДЛОРПАВІФЯЧСМИТЬБЮ\-0-9]+){1}[\s]+([ЙЦУКЕНГШЩЗХЇЄЖДЛОРПАВІФЯЧСМИТЬБЮ\s\-0-9\.]+)[\s][\r\n][\n\r\s\-]+";
+        private const string basePartRegex = @"[\w\W]*^([\.]?[\w\W]*).НР[\s\.]*([0-9]*){1}[\s]*$[\n\r]+^([ЙЦУКЕНГШЩЗХЇЄЖДЛОРПАВІФЯЧСМИТЬБЮ\s\/]+[ЙЦУКЕНГШЩЗХЇЄЖДЛОРПАВІФЯЧСМИТЬБЮ\d\s]+)$[\n\r]+^([ЙЦУКЕНГШЩЗХЇЄЖДЛОРПАВІФЯЧСМИТЬБЮ\w\d\W\n\r]+)^[\s]*НР\.[\s]*([\d\/\s\-]+[\s]*[\d]+)[\s]+([ЙЦУКЕНГШЩЗХЇЄЖДЛОРПАВІФЯЧСМИТЬБЮ\s\.\-0-9]+)^([\d]+[\s\.\\]+[\d]+[\s\.\\]+[\d]+)[\s]*([ЙЦУКЕНГШЩЗХЇЄЖДЛОРПАВІФЯЧСМИТЬБЮ\s\-0-9]+)$[\n\r\s]+([ЙЦУКЕНГШЩЗХЇЄЖДЛОРПАВІФЯЧСМИТЬБЮ\-0-9]+){1}[\s]+([ЙЦУКЕНГШЩЗХЇЄЖДЛОРПАВІФЯЧСМИТЬБЮ\s\-0-9\.]+)[\s][\r\n][\n\r\s\-]+";
         private const string urgencyRegex = @"[\s\t\d]{10,}....(ТЕРМІНОВ.)";
 
         public static string FirstPartRegex => firstPartRegex;
@@ -37,11 +38,13 @@ namespace Telegraph
         private ApplicationContext db;
         private Task dbTask;
         private static ApplicationViewModel applicationViewModel;
+        private TelegramWnd telegramWindow;
 
         RelayCommand newCommand;
         RelayCommand addCommand;
         RelayCommand editCommand;
         RelayCommand deleteCommand;
+        RelayCommand sendToWord;
         RelayCommand windowLoaded;
 
         public static ApplicationViewModel SharedViewModel()
@@ -158,36 +161,39 @@ namespace Telegraph
                     result = tlg.IncNum.ToString();
                     break;
                 case 2:
-                    result = tlg.To.ToString();
+                    result = tlg.From.ToString();
                     break;
                 case 3:
-                    result = tlg.Text.ToString();
+                    result = tlg.To.ToString();
                     break;
                 case 4:
-                    result = tlg.SubNum.ToString();
+                    result = tlg.Text.ToString();
                     break;
                 case 5:
-                    result = tlg.Date.ToString();
+                    result = tlg.SubNum.ToString();
                     break;
                 case 6:
-                    result = tlg.SenderPos.ToString();
+                    result = tlg.Date.ToString();
                     break;
                 case 7:
-                    result = tlg.SenderRank.ToString();
+                    result = tlg.SenderPos.ToString();
                     break;
                 case 8:
-                    result = tlg.SenderName.ToString();
+                    result = tlg.SenderRank.ToString();
                     break;
                 case 9:
-                    result = tlg.Executor.ToString();
+                    result = tlg.SenderName.ToString();
                     break;
                 case 10:
-                    result = tlg.Phone.ToString();
+                    result = tlg.Executor.ToString();
                     break;
                 case 11:
-                    result = tlg.HandedBy.ToString();
+                    result = tlg.Phone.ToString();
                     break;
                 case 12:
+                    result = tlg.HandedBy.ToString();
+                    break;
+                case 13:
                     result = tlg.Dispatcher.ToString();
                     break;
                 default:
@@ -241,7 +247,7 @@ namespace Telegraph
                   (addCommand = new RelayCommand((o) =>
                   {
                       string[] files = null;
-                      var x = o.GetType();
+
                       if (o == null)
                       {
                           // Create OpenFileDialog 
@@ -293,6 +299,29 @@ namespace Telegraph
             }
         }
 
+        public RelayCommand SendToWord
+        {
+            get
+            {
+                return sendToWord ??
+                    (sendToWord = new RelayCommand((selectedItem) =>
+                    {
+                        Telegram tlg;
+                        if (TelegramWindow == null)
+                            if (selectedItem == null)
+                                return;
+                            else
+                                tlg = selectedItem as Telegram;
+                        else
+                            tlg = TelegramWindow.Telegram;
+
+                        string fileName = GetTempFile("docx");
+                        new WordDocument(tlg).CreatePackage(fileName);
+                        Process.Start(fileName);
+                    }));
+            }
+        }
+
         private void InsertIntoDb(string[] files)
         {
             foreach (string filePath in files)
@@ -321,10 +350,10 @@ namespace Telegraph
 
                     bool isUrgency = new Regex(TlgRegex.UrgencyRegex).IsMatch(docText);
 
-                    string num = groups[1].Value.Trim().ToString();
+                    string num = groups[2].Value.Trim().ToString();
                     int number = Int32.Parse((!string.IsNullOrWhiteSpace(num)) ? num : "0");
-                    string SenderPosPart1 = groups[5].Value.Trim();
-                    string SenderPosPart2 = groups[7].Value.Trim();
+                    string SenderPosPart1 = groups[6].Value.Trim() + " ";
+                    string SenderPosPart2 = groups[8].Value.Trim();
 
                     int urgency = isUrgency ? 1 : 0;
 
@@ -332,16 +361,17 @@ namespace Telegraph
                     {
                         SelfNum = 0,
                         IncNum = number,
-                        To = groups[2].Value.Trim(),
-                        Text = groups[3].Value.Trim(),
-                        SubNum = groups[4].Value.Trim(),
-                        Date = groups[6].Value.Trim(),
+                        From = groups[1].Value.Trim(),
+                        To = groups[3].Value.Trim(),
+                        Text = groups[4].Value.Trim(),
+                        SubNum = groups[5].Value.Trim(),
+                        Date = groups[7].Value.Trim(),
                         SenderPos = string.Concat(SenderPosPart1, SenderPosPart2),
-                        SenderRank = groups[8].Value.Trim(),
-                        SenderName = groups[9].Value.Trim(),
-                        Executor = groups[10].Value.Trim(),
-                        Phone = groups[11].Value.Trim(),
-                        HandedBy = groups[12].Value.Trim(),
+                        SenderRank = groups[9].Value.Trim(),
+                        SenderName = groups[10].Value.Trim(),
+                        Executor = groups[11].Value.Trim(),
+                        Phone = groups[12].Value.Trim(),
+                        HandedBy = groups[13].Value.Trim(),
                         Urgency = urgency,
                         Dispatcher = string.Empty,
                         Time = string.Empty
@@ -366,38 +396,42 @@ namespace Telegraph
                 isNew = true;
             }
 
-            TelegramWnd telegramWindow = new TelegramWnd(tlg);
+             TelegramWindow = new TelegramWnd(tlg);
 
-            if (telegramWindow.ShowDialog() == true)
+            if (TelegramWindow.ShowDialog() == true)
             {
                 if (isNew)
                 {
-                    Db.Telegrams.Add(telegramWindow.Telegram);
+                    Db.Telegrams.Add(TelegramWindow.Telegram);
                 }
                 else
                 {
-                    tlg = Db.Telegrams.Find(telegramWindow.Telegram.Id);
+                    tlg = Db.Telegrams.Find(TelegramWindow.Telegram.Id);
 
-                    tlg.To = telegramWindow.Telegram.To;
-                    tlg.SelfNum = telegramWindow.Telegram.SelfNum;
-                    tlg.IncNum = telegramWindow.Telegram.IncNum;
-                    tlg.Text = telegramWindow.Telegram.Text;
-                    tlg.SubNum = telegramWindow.Telegram.SubNum;
-                    tlg.Date = telegramWindow.Telegram.Date;
-                    tlg.SenderPos = telegramWindow.Telegram.SenderPos;
-                    tlg.SenderRank = telegramWindow.Telegram.SenderRank;
-                    tlg.SenderName = telegramWindow.Telegram.SenderName;
-                    tlg.Executor = telegramWindow.Telegram.Executor;
-                    tlg.Phone = telegramWindow.Telegram.Phone;
-                    tlg.HandedBy = telegramWindow.Telegram.HandedBy;
-                    tlg.Urgency = telegramWindow.Telegram.Urgency;
-                    tlg.Dispatcher = telegramWindow.Telegram.Dispatcher;
-                    tlg.Time = telegramWindow.Telegram.Time;
+                    tlg.From = TelegramWindow.Telegram.From;
+                    tlg.To = TelegramWindow.Telegram.To;
+                    tlg.SelfNum = TelegramWindow.Telegram.SelfNum;
+                    tlg.IncNum = TelegramWindow.Telegram.IncNum;
+                    tlg.Text = TelegramWindow.Telegram.Text;
+                    tlg.SubNum = TelegramWindow.Telegram.SubNum;
+                    tlg.Date = TelegramWindow.Telegram.Date;
+                    tlg.SenderPos = TelegramWindow.Telegram.SenderPos;
+                    tlg.SenderRank = TelegramWindow.Telegram.SenderRank;
+                    tlg.SenderName = TelegramWindow.Telegram.SenderName;
+                    tlg.Executor = TelegramWindow.Telegram.Executor;
+                    tlg.Phone = TelegramWindow.Telegram.Phone;
+                    tlg.HandedBy = TelegramWindow.Telegram.HandedBy;
+                    tlg.Urgency = TelegramWindow.Telegram.Urgency;
+                    tlg.Dispatcher = TelegramWindow.Telegram.Dispatcher;
+                    tlg.Time = TelegramWindow.Telegram.Time;
 
                     Db.Entry(tlg).State = EntityState.Modified;
                 }
                 Db.SaveChanges();
                 RefreshViewSource();
+
+                TelegramWindow.Close();
+                TelegramWindow = null;
             }
 
 
@@ -406,6 +440,7 @@ namespace Telegraph
         private bool CheckData(Telegram data)
         {
             if (data.IncNum < 1 ||
+                string.IsNullOrWhiteSpace(data.From) ||
                 string.IsNullOrWhiteSpace(data.To) ||
                 string.IsNullOrWhiteSpace(data.Text) ||
                 string.IsNullOrWhiteSpace(data.SubNum) ||
@@ -425,9 +460,33 @@ namespace Telegraph
             }
         }
 
+        private string GetTempFile(string fileExtension)
+        {
+            string temp = System.IO.Path.GetTempPath();
+            string res = string.Empty;
+            while (true)
+            {
+                res = string.Format("{0}.{1}", Guid.NewGuid().ToString(), fileExtension);
+                res = System.IO.Path.Combine(temp, res);
+                if (!System.IO.File.Exists(res))
+                {
+                    try
+                    {
+                        System.IO.FileStream s = System.IO.File.Create(res);
+                        s.Close();
+                        break;
+                    }
+                    catch (Exception)
+                    {
+
+                    }
+                }
+            }
+            return res;
+        }
+
         public ApplicationContext Db { get => db; set => db = value; }
         public Task DbTask { get => dbTask; set => dbTask = value; }
-
-
+        public TelegramWnd TelegramWindow { get => telegramWindow; set => telegramWindow = value; }
     }
 }

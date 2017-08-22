@@ -29,6 +29,13 @@ namespace Telegraph
         }
 
         [Required(AllowEmptyStrings = false, ErrorMessage = "Поле не повинно бути пустим")]
+        public string From
+        {
+            get { return GetValue(() => From); }
+            set { SetValue(() => From, value); }
+        }
+
+        [Required(AllowEmptyStrings = false, ErrorMessage = "Поле не повинно бути пустим")]
         public string To
         {
             get { return GetValue(() => To); }
@@ -127,6 +134,7 @@ namespace Telegraph
                 Id = this.Id,
                 SelfNum = this.SelfNum,
                 IncNum = this.IncNum,
+                From = this.From,
                 To = this.To,
                 Text = this.Text,
                 SubNum = this.SubNum,

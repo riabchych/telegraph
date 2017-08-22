@@ -126,6 +126,7 @@
     <Compile Include="UrgencyConverter.cs" />
     <Compile Include="ViewModels\MainViewModel.cs" />
     <Compile Include="ViewModels\ViewModelLocator.cs" />
+    <Compile Include="WordDocument.cs" />
     <Page Include="TelegramWnd.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
