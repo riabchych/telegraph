@@ -38,12 +38,12 @@ namespace Telegraph
         private ApplicationContext db;
         private Task dbTask;
         private static ApplicationViewModel applicationViewModel;
-        private TelegramWnd telegramWindow;
 
         RelayCommand newCommand;
         RelayCommand addCommand;
         RelayCommand editCommand;
         RelayCommand deleteCommand;
+        RelayCommand saveCommand;
         RelayCommand sendToWord;
         RelayCommand windowLoaded;
 
@@ -220,6 +220,20 @@ namespace Telegraph
             }
         }
 
+        public RelayCommand SaveCommand
+        {
+            get
+            {
+                return saveCommand ??
+                    (saveCommand = new RelayCommand((wnd) =>
+                    {
+                        TelegramWnd telegramWindow = wnd as TelegramWnd;
+                        if(telegramWindow != null)
+                            telegramWindow.DialogResult = true;
+                    }));
+            }
+        }
+
         // команда редактирования
         public RelayCommand EditCommand
         {
@@ -304,16 +318,28 @@ namespace Telegraph
             get
             {
                 return sendToWord ??
-                    (sendToWord = new RelayCommand((selectedItem) =>
+                    (sendToWord = new RelayCommand((o) =>
                     {
+                        if (o == null)
+                            return;
+
                         Telegram tlg;
-                        if (TelegramWindow == null)
-                            if (selectedItem == null)
-                                return;
-                            else
-                                tlg = selectedItem as Telegram;
-                        else
-                            tlg = TelegramWindow.Telegram;
+                        string type = o.GetType().Name;
+
+                        switch (type)
+                        {
+                            case "Telegram": tlg = o as Telegram;
+                                break;
+                            case "TelegramWnd":
+                                TelegramWnd wnd = o as TelegramWnd;
+                                tlg = wnd.Telegram;
+                                break;
+                            default:
+                                tlg = null;
+                                break;
+                        }
+                        if (tlg == null)
+                            return;
 
                         string fileName = GetTempFile("docx");
                         new WordDocument(tlg).CreatePackage(fileName);
@@ -396,7 +422,7 @@ namespace Telegraph
                 isNew = true;
             }
 
-            TelegramWindow = new TelegramWnd(tlg);
+            TelegramWnd TelegramWindow = new TelegramWnd(tlg);
             
             if (TelegramWindow.ShowDialog() == true)
             {
@@ -429,9 +455,6 @@ namespace Telegraph
                 }
                 Db.SaveChanges();
                 RefreshViewSource();
-
-                TelegramWindow.Close();
-                TelegramWindow = null;
             }
 
 
@@ -487,6 +510,5 @@ namespace Telegraph
 
         public ApplicationContext Db { get => db; set => db = value; }
         public Task DbTask { get => dbTask; set => dbTask = value; }
-        public TelegramWnd TelegramWindow { get => telegramWindow; set => telegramWindow = value; }
     }
 }

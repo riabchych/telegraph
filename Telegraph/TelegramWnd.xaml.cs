@@ -14,11 +14,7 @@ namespace Telegraph
             InitializeComponent();
             Telegram = t;
             DataContext = Telegram;
-        }
-
-        private void Accept_Click(object sender, RoutedEventArgs e)
-        {
-            DialogResult = true;
+            VM = ApplicationViewModel.SharedViewModel();
         }
     }
 }
