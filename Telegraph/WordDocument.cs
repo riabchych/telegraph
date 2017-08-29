@@ -10,6 +10,7 @@ using W14 = DocumentFormat.OpenXml.Office2010.Word;
 using Ds = DocumentFormat.OpenXml.CustomXmlDataProperties;
 using A = DocumentFormat.OpenXml.Drawing;
 using System;
+using System.Text.RegularExpressions;
 
 namespace Telegraph
 {
@@ -17,12 +18,34 @@ namespace Telegraph
     {
         public static void AddFormattedText(this Run run, string textToAdd)
         {
+            textToAdd = Regex.Replace(textToAdd, @"\s\r\n", " ");
+
             var texts = textToAdd.Split(new[] { Environment.NewLine }, StringSplitOptions.None);
 
             for (int i = 0; i < texts.Length; i++)
             {
                 if (i > 0)
-                    run.Append(new Break());
+                {
+                    Paragraph paragraph = new Paragraph() { RsidParagraphMarkRevision = "008A318F", RsidParagraphAddition = "00A326FF", RsidParagraphProperties = "004C1E74", RsidRunAdditionDefault = "008A318F" };
+
+                    ParagraphProperties paragraphProperties = new ParagraphProperties();
+                    ParagraphStyleId paragraphStyleId = new ParagraphStyleId() { Val = "a3" };
+                    Justification justification = new Justification() { Val = JustificationValues.Both };
+
+                    ParagraphMarkRunProperties paragraphMarkRunProperties = new ParagraphMarkRunProperties();
+                    FontSize fontSize = new FontSize() { Val = "24" };
+                    Languages languages = new Languages() { Val = "ua-UA" };
+
+                    paragraphMarkRunProperties.Append(fontSize);
+                    paragraphMarkRunProperties.Append(languages);
+
+                    paragraphProperties.Append(paragraphStyleId);
+                    paragraphProperties.Append(justification);
+                    paragraphProperties.Append(paragraphMarkRunProperties);
+                    paragraph.Append(paragraphProperties);
+
+                    run.Append(paragraph);
+                }
 
                 Text text = new Text();
                 text.Text = texts[i];
@@ -437,23 +460,11 @@ namespace Telegraph
 
             runProperties1.Append(fontSize16);
             Text text1 = new Text() { Space = SpaceProcessingModeValues.Preserve };
-            text1.Text = "Т Е Л Е Г Р А М ";
+            text1.Text = "Т Е Л Е Г Р А М А   ";
 
             run1.Append(runProperties1);
             run1.Append(text1);
             ProofError proofError1 = new ProofError() { Type = ProofingErrorValues.GrammarStart };
-
-            Run run2 = new Run();
-
-            RunProperties runProperties2 = new RunProperties();
-            FontSize fontSize17 = new FontSize() { Val = "32" };
-
-            runProperties2.Append(fontSize17);
-            Text text2 = new Text() { Space = SpaceProcessingModeValues.Preserve };
-            text2.Text = "А  ";
-
-            run2.Append(runProperties2);
-            run2.Append(text2);
 
             Run run3 = new Run();
 
@@ -474,7 +485,7 @@ namespace Telegraph
             RunProperties runProperties4 = new RunProperties();
             Italic italic3 = new Italic();
             FontSize fontSize19 = new FontSize() { Val = "28" };
-            Languages languages1 = new Languages() { Val = "en-US" };
+            Languages languages1 = new Languages() { Val = "ua-UA" };
 
             runProperties4.Append(italic3);
             runProperties4.Append(fontSize19);
@@ -489,7 +500,6 @@ namespace Telegraph
             paragraph15.Append(paragraphProperties15);
             paragraph15.Append(run1);
             paragraph15.Append(proofError1);
-            paragraph15.Append(run2);
             paragraph15.Append(run3);
             paragraph15.Append(run4);
             paragraph15.Append(proofError2);
@@ -533,7 +543,7 @@ namespace Telegraph
 
             ParagraphMarkRunProperties paragraphMarkRunProperties18 = new ParagraphMarkRunProperties();
             FontSize fontSize22 = new FontSize() { Val = "24" };
-            Languages languages3 = new Languages() { Val = "en-US" };
+            Languages languages3 = new Languages() { Val = "ua-UA" };
 
             paragraphMarkRunProperties18.Append(fontSize22);
             paragraphMarkRunProperties18.Append(languages3);
@@ -545,7 +555,7 @@ namespace Telegraph
 
             RunProperties runProperties5 = new RunProperties();
             FontSize fontSize23 = new FontSize() { Val = "24" };
-            Languages languages4 = new Languages() { Val = "en-US" };
+            Languages languages4 = new Languages() { Val = "ua-UA" };
 
             runProperties5.Append(fontSize23);
             runProperties5.Append(languages4);
@@ -559,7 +569,7 @@ namespace Telegraph
 
             RunProperties runProperties6 = new RunProperties();
             FontSize fontSize24 = new FontSize() { Val = "24" };
-            Languages languages5 = new Languages() { Val = "en-US" };
+            Languages languages5 = new Languages() { Val = "ua-UA" };
 
             runProperties6.Append(fontSize24);
             runProperties6.Append(languages5);
@@ -595,7 +605,7 @@ namespace Telegraph
 
             ParagraphMarkRunProperties paragraphMarkRunProperties20 = new ParagraphMarkRunProperties();
             FontSize fontSize26 = new FontSize() { Val = "24" };
-            Languages languages6 = new Languages() { Val = "en-US" };
+            Languages languages6 = new Languages() { Val = "ua-UA" };
 
             paragraphMarkRunProperties20.Append(fontSize26);
             paragraphMarkRunProperties20.Append(languages6);
@@ -607,7 +617,7 @@ namespace Telegraph
 
             RunProperties runProperties7 = new RunProperties();
             FontSize fontSize27 = new FontSize() { Val = "24" };
-            Languages languages7 = new Languages() { Val = "en-US" };
+            Languages languages7 = new Languages() { Val = "ua-UA" };
 
             runProperties7.Append(fontSize27);
             runProperties7.Append(languages7);
@@ -643,7 +653,7 @@ namespace Telegraph
 
             ParagraphMarkRunProperties paragraphMarkRunProperties22 = new ParagraphMarkRunProperties();
             FontSize fontSize29 = new FontSize() { Val = "24" };
-            Languages languages8 = new Languages() { Val = "en-US" };
+            Languages languages8 = new Languages() { Val = "ua-UA" };
 
             paragraphMarkRunProperties22.Append(fontSize29);
             paragraphMarkRunProperties22.Append(languages8);
@@ -655,13 +665,14 @@ namespace Telegraph
             Run run8 = new Run();
 
             RunProperties runProperties8 = new RunProperties();
+
             FontSize fontSize30 = new FontSize() { Val = "24" };
-            Languages languages9 = new Languages() { Val = "en-US" };
+            Languages languages9 = new Languages() { Val = "ua-UA" };
 
             runProperties8.Append(fontSize30);
             runProperties8.Append(languages9);
-
             run8.Append(runProperties8);
+
             run8.AddFormattedText(telegram.Text);
 
             paragraph22.Append(paragraphProperties22);
@@ -763,7 +774,7 @@ namespace Telegraph
 
             ParagraphMarkRunProperties paragraphMarkRunProperties25 = new ParagraphMarkRunProperties();
             FontSize fontSize33 = new FontSize() { Val = "24" };
-            Languages languages10 = new Languages() { Val = "en-US" };
+            Languages languages10 = new Languages() { Val = "ua-UA" };
 
             paragraphMarkRunProperties25.Append(fontSize33);
             paragraphMarkRunProperties25.Append(languages10);
@@ -776,7 +787,7 @@ namespace Telegraph
 
             RunProperties runProperties9 = new RunProperties();
             FontSize fontSize34 = new FontSize() { Val = "24" };
-            Languages languages11 = new Languages() { Val = "en-US" };
+            Languages languages11 = new Languages() { Val = "ua-UA" };
 
             runProperties9.Append(fontSize34);
             runProperties9.Append(languages11);
@@ -828,7 +839,7 @@ namespace Telegraph
 
             ParagraphMarkRunProperties paragraphMarkRunProperties26 = new ParagraphMarkRunProperties();
             FontSize fontSize35 = new FontSize() { Val = "24" };
-            Languages languages12 = new Languages() { Val = "en-US" };
+            Languages languages12 = new Languages() { Val = "ua-UA" };
 
             paragraphMarkRunProperties26.Append(fontSize35);
             paragraphMarkRunProperties26.Append(languages12);
@@ -840,7 +851,7 @@ namespace Telegraph
 
             RunProperties runProperties10 = new RunProperties();
             FontSize fontSize36 = new FontSize() { Val = "24" };
-            Languages languages13 = new Languages() { Val = "en-US" };
+            Languages languages13 = new Languages() { Val = "ua-UA" };
 
             runProperties10.Append(fontSize36);
             runProperties10.Append(languages13);
@@ -883,7 +894,7 @@ namespace Telegraph
 
             ParagraphMarkRunProperties paragraphMarkRunProperties27 = new ParagraphMarkRunProperties();
             FontSize fontSize37 = new FontSize() { Val = "24" };
-            Languages languages14 = new Languages() { Val = "en-US" };
+            Languages languages14 = new Languages() { Val = "ua-UA" };
 
             paragraphMarkRunProperties27.Append(fontSize37);
             paragraphMarkRunProperties27.Append(languages14);
@@ -896,7 +907,7 @@ namespace Telegraph
 
             RunProperties runProperties11 = new RunProperties();
             FontSize fontSize38 = new FontSize() { Val = "24" };
-            Languages languages15 = new Languages() { Val = "en-US" };
+            Languages languages15 = new Languages() { Val = "ua-UA" };
 
             runProperties11.Append(fontSize38);
             runProperties11.Append(languages15);
@@ -928,7 +939,7 @@ namespace Telegraph
 
             ParagraphMarkRunProperties paragraphMarkRunProperties28 = new ParagraphMarkRunProperties();
             FontSize fontSize39 = new FontSize() { Val = "24" };
-            Languages languages16 = new Languages() { Val = "en-US" };
+            Languages languages16 = new Languages() { Val = "ua-UA" };
 
             paragraphMarkRunProperties28.Append(fontSize39);
             paragraphMarkRunProperties28.Append(languages16);
@@ -952,7 +963,7 @@ namespace Telegraph
 
             RunProperties runProperties13 = new RunProperties();
             FontSize fontSize41 = new FontSize() { Val = "24" };
-            Languages languages17 = new Languages() { Val = "en-US" };
+            Languages languages17 = new Languages() { Val = "ua-UA" };
 
             runProperties13.Append(fontSize41);
             runProperties13.Append(languages17);
@@ -983,7 +994,7 @@ namespace Telegraph
 
             RunProperties runProperties14 = new RunProperties();
             FontSize fontSize43 = new FontSize() { Val = "24" };
-            Languages languages18 = new Languages() { Val = "en-US" };
+            Languages languages18 = new Languages() { Val = "ua-UA" };
 
             runProperties14.Append(fontSize43);
             runProperties14.Append(languages18);
@@ -1123,7 +1134,7 @@ namespace Telegraph
             Italic italic6 = new Italic();
             FontSize fontSize52 = new FontSize() { Val = "16" };
             FontSizeComplexScript fontSizeComplexScript3 = new FontSizeComplexScript() { Val = "16" };
-            Languages languages19 = new Languages() { Val = "en-US" };
+            Languages languages19 = new Languages() { Val = "ua-UA" };
 
             runProperties17.Append(italic6);
             runProperties17.Append(fontSize52);
@@ -1157,7 +1168,7 @@ namespace Telegraph
             Italic italic8 = new Italic();
             FontSize fontSize54 = new FontSize() { Val = "16" };
             FontSizeComplexScript fontSizeComplexScript5 = new FontSizeComplexScript() { Val = "16" };
-            Languages languages20 = new Languages() { Val = "en-US" };
+            Languages languages20 = new Languages() { Val = "ua-UA" };
 
             runProperties19.Append(italic8);
             runProperties19.Append(fontSize54);
@@ -1184,7 +1195,7 @@ namespace Telegraph
             Italic italic9 = new Italic();
             FontSize fontSize55 = new FontSize() { Val = "16" };
             FontSizeComplexScript fontSizeComplexScript6 = new FontSizeComplexScript() { Val = "16" };
-            Languages languages21 = new Languages() { Val = "en-US" };
+            Languages languages21 = new Languages() { Val = "ua-UA" };
 
             paragraphMarkRunProperties36.Append(italic9);
             paragraphMarkRunProperties36.Append(fontSize55);
@@ -1256,7 +1267,7 @@ namespace Telegraph
             Italic italic14 = new Italic();
             FontSize fontSize60 = new FontSize() { Val = "16" };
             FontSizeComplexScript fontSizeComplexScript11 = new FontSizeComplexScript() { Val = "16" };
-            Languages languages23 = new Languages() { Val = "en-US" };
+            Languages languages23 = new Languages() { Val = "ua-UA" };
 
             paragraphMarkRunProperties37.Append(italic14);
             paragraphMarkRunProperties37.Append(fontSize60);
@@ -1308,7 +1319,7 @@ namespace Telegraph
             Italic italic17 = new Italic();
             FontSize fontSize63 = new FontSize() { Val = "16" };
             FontSizeComplexScript fontSizeComplexScript14 = new FontSizeComplexScript() { Val = "16" };
-            Languages languages26 = new Languages() { Val = "en-US" };
+            Languages languages26 = new Languages() { Val = "ua-UA" };
 
             runProperties26.Append(italic17);
             runProperties26.Append(fontSize63);
@@ -1344,7 +1355,7 @@ namespace Telegraph
             Italic italic19 = new Italic();
             FontSize fontSize65 = new FontSize() { Val = "16" };
             FontSizeComplexScript fontSizeComplexScript16 = new FontSizeComplexScript() { Val = "16" };
-            Languages languages28 = new Languages() { Val = "en-US" };
+            Languages languages28 = new Languages() { Val = "ua-UA" };
 
             runProperties28.Append(italic19);
             runProperties28.Append(fontSize65);
@@ -1571,13 +1582,16 @@ namespace Telegraph
             RunPropertiesDefault runPropertiesDefault1 = new RunPropertiesDefault();
 
             RunPropertiesBaseStyle runPropertiesBaseStyle1 = new RunPropertiesBaseStyle();
-            RunFonts runFonts1 = new RunFonts() { Ascii = "Times New Roman", HighAnsi = "Times New Roman", EastAsia = "Times New Roman", ComplexScript = "Times New Roman" };
+            RunFonts runFonts1 = new RunFonts() { Ascii = "Courier New", HighAnsi = "Courier New", EastAsia = "Courier New", ComplexScript = "Courier New" };
             Languages languages29 = new Languages() { Val = "ru-RU", EastAsia = "ru-RU", Bidi = "ar-SA" };
+            Justification justification = new Justification() { Val = JustificationValues.Both };
 
             runPropertiesBaseStyle1.Append(runFonts1);
             runPropertiesBaseStyle1.Append(languages29);
 
+
             runPropertiesDefault1.Append(runPropertiesBaseStyle1);
+            runPropertiesDefault1.Append(justification);
             ParagraphPropertiesDefault paragraphPropertiesDefault1 = new ParagraphPropertiesDefault();
 
             docDefaults1.Append(runPropertiesDefault1);
@@ -2207,8 +2221,8 @@ namespace Telegraph
 
             StyleRunProperties styleRunProperties2 = new StyleRunProperties();
             RunFonts runFonts2 = new RunFonts() { Ascii = "Courier New", HighAnsi = "Courier New", ComplexScript = "Courier New" };
-            FontSize fontSize67 = new FontSize() { Val = "20" };
-            FontSizeComplexScript fontSizeComplexScript18 = new FontSizeComplexScript() { Val = "20" };
+            FontSize fontSize67 = new FontSize() { Val = "24" };
+            FontSizeComplexScript fontSizeComplexScript18 = new FontSizeComplexScript() { Val = "24" };
 
             styleRunProperties2.Append(runFonts2);
             styleRunProperties2.Append(fontSize67);
@@ -2819,7 +2833,7 @@ namespace Telegraph
             fonts1.AddNamespaceDeclaration("w15", "http://schemas.microsoft.com/office/word/2012/wordml");
             fonts1.AddNamespaceDeclaration("w16se", "http://schemas.microsoft.com/office/word/2015/wordml/symex");
 
-            Font font1 = new Font() { Name = "Times New Roman" };
+            Font font1 = new Font() { Name = "Courier New" };
             Panose1Number panose1Number1 = new Panose1Number() { Val = "02020603050405020304" };
             FontCharSet fontCharSet1 = new FontCharSet() { Val = "CC" };
             FontFamily fontFamily1 = new FontFamily() { Val = FontFamilyValues.Roman };

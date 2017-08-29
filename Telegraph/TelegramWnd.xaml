@@ -8,12 +8,12 @@
         xmlns:Properties="clr-namespace:Telegraph.Properties"
     xmlns:cmd="http://www.galasoft.ch/mvvmlight" x:Class="Telegraph.TelegramWnd"
         mc:Ignorable="d"
-        Title="Телеграма" Height="668.15" Width="560" MinWidth="560" MinHeight="440" WindowStartupLocation="CenterScreen" ScrollViewer.VerticalScrollBarVisibility="Disabled">
+        Title="Телеграма" Height="560" Width="560" MinWidth="560" MinHeight="520" WindowStartupLocation="CenterScreen" ScrollViewer.VerticalScrollBarVisibility="Disabled">
 
     <Window.DataContext>
         <local:ApplicationViewModel x:Name="VM" />
     </Window.DataContext>
-    
+
     <Window.Resources>
         <local:UrgencyConverter x:Key="urgencyConverterKey" />
 
@@ -36,76 +36,103 @@
     </Window.Resources>
     <Grid>
         <Grid.RowDefinitions>
-            <RowDefinition Height="37" />
-            <RowDefinition Height="37" />
-            <RowDefinition Height="37" />
-            <RowDefinition Height="37" />
-            <RowDefinition  />
-            <RowDefinition Height="37" />
-            <RowDefinition Height="37" />
-            <RowDefinition Height="37" />
-            <RowDefinition Height="37" />
-            <RowDefinition Height="37" />
-            <RowDefinition Height="37" />
-            <RowDefinition Height="37" />
-            <RowDefinition Height="37" />
-            <RowDefinition Height="37" />
-            <RowDefinition Height="37" />
-            <RowDefinition Height="37" />
+            <RowDefinition Height="*" />
             <RowDefinition Height="37" />
         </Grid.RowDefinitions>
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="100" />
-            <ColumnDefinition />
-        </Grid.ColumnDefinitions>
-        <TextBlock Text="Терміновість" />
-        <TextBlock Text="№" Grid.Row="1" />
-        <TextBlock Text="Вхідний номер" Grid.Row="2" />
-        <TextBlock Text="Відправник" Grid.Row="3" />
-        <TextBlock Text="Кому" Grid.Row="4" />
-        <TextBlock Text="Текст" Grid.Row="5" />
-        <TextBlock Text="Підписний" Grid.Row="6" />
-        <TextBlock Text="Дата" Grid.Row="7" />
-        <TextBlock Text="Посада відпр." Grid.Row="8" TextWrapping="Wrap" />
-        <TextBlock Text="Звання відпр." Grid.Row="9" TextWrapping="Wrap" />
-        <TextBlock Text="Ім'я відпр." Grid.Row="10" TextWrapping="Wrap" />
-        <TextBlock Text="Виконавець" Grid.Row="11" TextWrapping="Wrap" />
-        <TextBlock Text="Тел. виконавця" Grid.Row="12" TextWrapping="Wrap" />
-        <TextBlock Text="Передав" Grid.Row="13" TextWrapping="Wrap" />
-        <TextBlock Text="Прийняв" Grid.Row="14" TextWrapping="Wrap" />
-        <TextBlock Text="Час" Grid.Row="15" TextWrapping="Wrap" />
 
-        <RadioButton Grid.Column="1" Margin="10,10,0,8" GroupName="UrgencyGroup" Content="Проста" IsChecked="{Binding Urgency, ConverterParameter=0, Converter={StaticResource urgencyConverterKey}}"  HorizontalAlignment="Left" Width="70" />
-        <RadioButton Grid.Column="1" Margin="85,10,0,8" GroupName="UrgencyGroup" Content="Термінова" IsChecked="{Binding Urgency, ConverterParameter=1, Converter={StaticResource urgencyConverterKey}}" HorizontalAlignment="Left" Width="80" />
+        <TabControl>
+            <TabItem Header="Загальне">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="37" />
+                        <RowDefinition Height="37" />
+                        <RowDefinition Height="*" />
+                        <RowDefinition Height="37" />
+                        <RowDefinition Height="37" />
 
-        <TextBox Text="{Binding SelfNum, Mode=TwoWay, UpdateSourceTrigger=LostFocus, ValidatesOnDataErrors=True, NotifyOnValidationError=True}" Grid.Column="1" Grid.Row="1" CharacterCasing="Upper" AutomationProperties.IsRequiredForForm="True"/>
-        <TextBox Text="{Binding IncNum, Mode=TwoWay, UpdateSourceTrigger=LostFocus, ValidatesOnDataErrors=True,NotifyOnValidationError=True}" Grid.Column="1" Grid.Row="2" CharacterCasing="Upper" AutomationProperties.IsRequiredForForm="True"/>
-        <TextBox Text="{Binding From, Mode=TwoWay, UpdateSourceTrigger=LostFocus, ValidatesOnDataErrors=True,NotifyOnValidationError=True}" Grid.Column="1" Grid.Row="3" CharacterCasing="Upper" AutomationProperties.IsRequiredForForm="True" />
-        <TextBox Text="{Binding To, Mode=TwoWay, UpdateSourceTrigger=LostFocus, ValidatesOnDataErrors=True,NotifyOnValidationError=True}" Grid.Column="1" Grid.Row="4" CharacterCasing="Upper" AutomationProperties.IsRequiredForForm="True" />
-        <RichTextBox Grid.Column="1" Grid.Row="5" VerticalScrollBarVisibility="Auto" AcceptsReturn="True" Margin="8" AcceptsTab="True">
-            <FlowDocument>
-                <Paragraph>
-                    <Run Text="{Binding Text, Mode=TwoWay, UpdateSourceTrigger=LostFocus, ValidatesOnDataErrors=True,NotifyOnValidationError=True}" />
-                </Paragraph>
-            </FlowDocument>
-        </RichTextBox>
-        <TextBox Text="{Binding SubNum, Mode=TwoWay, UpdateSourceTrigger=LostFocus, ValidatesOnDataErrors=True,NotifyOnValidationError=True}" Grid.Column="1" Grid.Row="6" CharacterCasing="Upper" AutomationProperties.IsRequiredForForm="True" />
-        <TextBox Text="{Binding Date, Mode=TwoWay, UpdateSourceTrigger=LostFocus, ValidatesOnDataErrors=True,NotifyOnValidationError=True}" Grid.Column="1" Grid.Row="7" CharacterCasing="Upper" AutomationProperties.IsRequiredForForm="True" />
-        <TextBox Text="{Binding SenderPos, Mode=TwoWay, UpdateSourceTrigger=LostFocus, ValidatesOnDataErrors=True,NotifyOnValidationError=True}" Grid.Column="1" Grid.Row="8" CharacterCasing="Upper" AutomationProperties.IsRequiredForForm="True" />
-        <TextBox Text="{Binding SenderRank, Mode=TwoWay, UpdateSourceTrigger=LostFocus, ValidatesOnDataErrors=True,NotifyOnValidationError=True}" Grid.Column="1" Grid.Row="9" CharacterCasing="Upper" AutomationProperties.IsRequiredForForm="True" />
-        <TextBox Text="{Binding SenderName, Mode=TwoWay, UpdateSourceTrigger=LostFocus, ValidatesOnDataErrors=True,NotifyOnValidationError=True}" Grid.Column="1" Grid.Row="10" CharacterCasing="Upper" AutomationProperties.IsRequiredForForm="True" />
-        <TextBox Text="{Binding Executor, Mode=TwoWay, UpdateSourceTrigger=LostFocus, ValidatesOnDataErrors=True,NotifyOnValidationError=True}" Grid.Column="1" Grid.Row="11" CharacterCasing="Upper" AutomationProperties.IsRequiredForForm="True" />
-        <TextBox Text="{Binding Phone, Mode=TwoWay, UpdateSourceTrigger=LostFocus, ValidatesOnDataErrors=True,NotifyOnValidationError=True}" Grid.Column="1" Grid.Row="12" CharacterCasing="Upper" />
-        <TextBox Text="{Binding HandedBy, Mode=TwoWay, UpdateSourceTrigger=LostFocus, ValidatesOnDataErrors=True,NotifyOnValidationError=True}" Grid.Column="1" Grid.Row="13" CharacterCasing="Upper" AutomationProperties.IsRequiredForForm="True" />
-        <TextBox Text="{Binding Dispatcher, Mode=TwoWay, UpdateSourceTrigger=LostFocus, ValidatesOnDataErrors=True,NotifyOnValidationError=True}" Grid.Column="1" Grid.Row="14" CharacterCasing="Upper" AutomationProperties.IsRequiredForForm="True" />
-        <TextBox Text="{Binding Time, Mode=TwoWay, UpdateSourceTrigger=LostFocus, ValidatesOnDataErrors=True,NotifyOnValidationError=True}" Grid.Column="1" Grid.Row="15" CharacterCasing="Upper" />
+                    </Grid.RowDefinitions>
 
-        <StackPanel HorizontalAlignment="Left" Orientation="Horizontal" Grid.Row="16" Grid.Column="1" Width="140" Margin="10,0,0,0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="100" />
+                        <ColumnDefinition />
+                    </Grid.ColumnDefinitions>
+
+                    <TextBlock Text="Терміновість" />
+                    <TextBlock Text="№" Grid.Row="1" />
+                    <TextBlock Text="Текст" Grid.Row="2" />
+                    <TextBlock Text="Підписний" Grid.Row="3" />
+                    <TextBlock Text="Дата" Grid.Row="4" />
+
+                    <RadioButton Grid.Column="1" Margin="10,10,0,8" GroupName="UrgencyGroup" Content="Проста" IsChecked="{Binding Urgency, ConverterParameter=0, Converter={StaticResource urgencyConverterKey}}"  HorizontalAlignment="Left" Width="70" />
+                    <RadioButton Grid.Column="1" Margin="85,10,0,8" GroupName="UrgencyGroup" Content="Термінова" IsChecked="{Binding Urgency, ConverterParameter=1, Converter={StaticResource urgencyConverterKey}}" HorizontalAlignment="Left" Width="80" />
+
+                    <TextBox Text="{Binding SelfNum, Mode=TwoWay, UpdateSourceTrigger=LostFocus, ValidatesOnDataErrors=True, NotifyOnValidationError=True}" Grid.Column="1" Grid.Row="1" CharacterCasing="Upper" AutomationProperties.IsRequiredForForm="True" FontFamily="Courier New"/>
+                    <RichTextBox Grid.Column="1" Grid.Row="2" VerticalScrollBarVisibility="Auto" AcceptsReturn="True" Margin="8" AcceptsTab="True" FontFamily="Courier New">
+                        <FlowDocument TextAlignment="Justify">
+                            <Paragraph>
+                                <Run Text="{Binding Text, Mode=TwoWay, UpdateSourceTrigger=LostFocus, ValidatesOnDataErrors=True,NotifyOnValidationError=True}" />
+                            </Paragraph>
+                        </FlowDocument>
+                    </RichTextBox>
+                    <TextBox Text="{Binding SubNum, Mode=TwoWay, UpdateSourceTrigger=LostFocus, ValidatesOnDataErrors=True,NotifyOnValidationError=True}" Grid.Column="1" Grid.Row="3" CharacterCasing="Upper" AutomationProperties.IsRequiredForForm="True" FontFamily="Courier New" />
+                    <TextBox Text="{Binding Date, Mode=TwoWay, UpdateSourceTrigger=LostFocus, ValidatesOnDataErrors=True,NotifyOnValidationError=True}" Grid.Column="1" Grid.Row="4" CharacterCasing="Upper" AutomationProperties.IsRequiredForForm="True" FontFamily="Courier New" />
+                </Grid>
+            </TabItem>
+            <TabItem Header="Додатково">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="37" />
+                        <RowDefinition Height="37" />
+                        <RowDefinition Height="37" />
+                        <RowDefinition Height="37" />
+                        <RowDefinition Height="37" />
+                        <RowDefinition Height="37" />
+                        <RowDefinition Height="37" />
+                        <RowDefinition Height="37" />
+                        <RowDefinition Height="37" />
+                        <RowDefinition Height="37" />
+                        <RowDefinition Height="37" />
+                        <RowDefinition Height="37" />
+                    </Grid.RowDefinitions>
+
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="100" />
+                        <ColumnDefinition />
+                    </Grid.ColumnDefinitions>
+
+                    <TextBlock Text="Вхідний номер" />
+                    <TextBlock Text="Відправник" Grid.Row="1"/>
+                    <TextBlock Text="Одержувач" Grid.Row="2" />
+                    <TextBlock Text="Посада відпр." Grid.Row="3" TextWrapping="Wrap" />
+                    <TextBlock Text="Звання відпр." Grid.Row="4" TextWrapping="Wrap" />
+                    <TextBlock Text="Ім'я відпр." Grid.Row="5" TextWrapping="Wrap" />
+                    <TextBlock Text="Виконавець" Grid.Row="6" TextWrapping="Wrap" />
+                    <TextBlock Text="Тел. виконавця" Grid.Row="7" TextWrapping="Wrap" />
+                    <TextBlock Text="Передав" Grid.Row="8" TextWrapping="Wrap" />
+                    <TextBlock Text="Прийняв" Grid.Row="9" TextWrapping="Wrap" />
+                    <TextBlock Text="Час прийому" Grid.Row="10" TextWrapping="Wrap" />
+
+                    <TextBox Text="{Binding IncNum, Mode=TwoWay, UpdateSourceTrigger=LostFocus, ValidatesOnDataErrors=True,NotifyOnValidationError=True}" Grid.Column="1" CharacterCasing="Upper" AutomationProperties.IsRequiredForForm="True" FontFamily="Courier New"/>
+                    <TextBox Text="{Binding From, Mode=TwoWay, UpdateSourceTrigger=LostFocus, ValidatesOnDataErrors=True,NotifyOnValidationError=True}" Grid.Column="1" Grid.Row="1" CharacterCasing="Upper" AutomationProperties.IsRequiredForForm="True" FontFamily="Courier New" />
+                    <TextBox Text="{Binding To, Mode=TwoWay, UpdateSourceTrigger=LostFocus, ValidatesOnDataErrors=True,NotifyOnValidationError=True}" Grid.Column="1" Grid.Row="2" CharacterCasing="Upper" AutomationProperties.IsRequiredForForm="True" FontFamily="Courier New" />
+                    <TextBox Text="{Binding SenderPos, Mode=TwoWay, UpdateSourceTrigger=LostFocus, ValidatesOnDataErrors=True,NotifyOnValidationError=True}" Grid.Column="1" Grid.Row="3" CharacterCasing="Upper" AutomationProperties.IsRequiredForForm="True" FontFamily="Courier New" />
+                    <TextBox Text="{Binding SenderRank, Mode=TwoWay, UpdateSourceTrigger=LostFocus, ValidatesOnDataErrors=True,NotifyOnValidationError=True}" Grid.Column="1" Grid.Row="4" CharacterCasing="Upper" AutomationProperties.IsRequiredForForm="True" FontFamily="Courier New" />
+                    <TextBox Text="{Binding SenderName, Mode=TwoWay, UpdateSourceTrigger=LostFocus, ValidatesOnDataErrors=True,NotifyOnValidationError=True}" Grid.Column="1" Grid.Row="5" CharacterCasing="Upper" AutomationProperties.IsRequiredForForm="True" FontFamily="Courier New" />
+                    <TextBox Text="{Binding Executor, Mode=TwoWay, UpdateSourceTrigger=LostFocus, ValidatesOnDataErrors=True,NotifyOnValidationError=True}" Grid.Column="1" Grid.Row="6" CharacterCasing="Upper" AutomationProperties.IsRequiredForForm="True" FontFamily="Courier New" />
+                    <TextBox Text="{Binding Phone, Mode=TwoWay, UpdateSourceTrigger=LostFocus, ValidatesOnDataErrors=True,NotifyOnValidationError=True}" Grid.Column="1" Grid.Row="7" CharacterCasing="Upper" FontFamily="Courier New" />
+                    <TextBox Text="{Binding HandedBy, Mode=TwoWay, UpdateSourceTrigger=LostFocus, ValidatesOnDataErrors=True,NotifyOnValidationError=True}" Grid.Column="1" Grid.Row="8" CharacterCasing="Upper" AutomationProperties.IsRequiredForForm="True" FontFamily="Courier New" />
+                    <TextBox Text="{Binding Dispatcher, Mode=TwoWay, UpdateSourceTrigger=LostFocus, ValidatesOnDataErrors=True,NotifyOnValidationError=True}" Grid.Column="1" Grid.Row="9" CharacterCasing="Upper" AutomationProperties.IsRequiredForForm="True" FontFamily="Courier New" />
+                    <TextBox Text="{Binding Time, Mode=TwoWay, UpdateSourceTrigger=LostFocus, ValidatesOnDataErrors=True,NotifyOnValidationError=True}" Grid.Column="1" Grid.Row="10" CharacterCasing="Upper" FontFamily="Courier New" />
+                </Grid>
+            </TabItem>
+        </TabControl>
+
+        <StackPanel HorizontalAlignment="Left" Orientation="Horizontal" Grid.Row="1" Width="140" Margin="10,0,0,0">
             <Button IsDefault="True" Click="Accept_Click" MinWidth="60" Margin="5" Content="OK"/>
             <Button IsCancel="True" MinWidth="60" Margin="5" Content="Скасувати"/>
         </StackPanel>
 
-        <StackPanel HorizontalAlignment="Right" Orientation="Horizontal" Grid.Row="16" Grid.Column="1" Width="175" Margin="0,0,8,0">
+        <StackPanel HorizontalAlignment="Right" Orientation="Horizontal" Grid.Row="1" Width="175" Margin="0,0,8,0">
             <Button MinWidth="60" Margin="5" Content="Друк"/>
             <Button MinWidth="60" Margin="5" Content="Відкрити у Word">
                 <i:Interaction.Triggers>
@@ -115,5 +142,6 @@
                 </i:Interaction.Triggers>
             </Button>
         </StackPanel>
+
     </Grid>
 </Window>

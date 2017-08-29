@@ -19,10 +19,10 @@ namespace Telegraph
 {
     struct TlgRegex
     {
-        private const string firstPartRegex = @"^ВИК[\s\.]+([ЙЦУКЕНГШЩЗХЇЄЖДЛОРПАВІФЯЧСМИТЬБЮ0-9]+){1}[\s]+([0-9\-\:]+){1}[\s]*$[\n\r\s\-]+^ПРД[\s\.]+([ЙЦУКЕНГШЩЗХЇЄЖДЛОРПАВІФЯЧСМИТЬБЮ0-9]+){1}";
-        private const string secondPartRegex = @"^ПРД[\s\.]+([ЙЦУКЕНГШЩЗХЇЄЖДЛОРПАВІФЯЧСМИТЬБЮ0-9]+)[\s]*$[\s\r\n]+^ВИК[\s\.]+([ЙЦУКЕНГШЩЗХЇЄЖДЛОРПАВІФЯЧСМИТЬБЮ0-9]+){1}[\s]+([0-9\-\:]+)[\s]?";
-        private const string basePartRegex = @"[\w\W]*^([\.]?[\w\W]*).НР[\s\.]*([0-9]*){1}[\s]*$[\n\r]+^([ЙЦУКЕНГШЩЗХЇЄЖДЛОРПАВІФЯЧСМИТЬБЮ\s\/]+[ЙЦУКЕНГШЩЗХЇЄЖДЛОРПАВІФЯЧСМИТЬБЮ\d\s]+)$[\n\r]+^([ЙЦУКЕНГШЩЗХЇЄЖДЛОРПАВІФЯЧСМИТЬБЮ\w\d\W\n\r]+)^[\s]*НР\.[\s]*([\d\/\s\-]+[\s]*[\d]+)[\s]+([ЙЦУКЕНГШЩЗХЇЄЖДЛОРПАВІФЯЧСМИТЬБЮ\s\.\-0-9]+)^([\d]+[\s\.\\]+[\d]+[\s\.\\]+[\d]+)[\s]*([ЙЦУКЕНГШЩЗХЇЄЖДЛОРПАВІФЯЧСМИТЬБЮ\s\-0-9]+)$[\n\r\s]+([ЙЦУКЕНГШЩЗХЇЄЖДЛОРПАВІФЯЧСМИТЬБЮ\-0-9]+){1}[\s]+([ЙЦУКЕНГШЩЗХЇЄЖДЛОРПАВІФЯЧСМИТЬБЮ\s\-0-9\.]+)[\s][\r\n][\n\r\s\-]+";
-        private const string urgencyRegex = @"[\s\t\d]{10,}....(ТЕРМІНОВ.)";
+        private const string firstPartRegex = @"^ВИК[\s\.]+([А-ЯЁЇІЄҐ\1]+){1}[\s]+([0-9\-\:]+){1}[\s]*$[\s\-]+^ПРД[\s\.]+([А-ЯЁЇІЄҐ\1]+){1}";
+        private const string secondPartRegex = @"^ПРД[\s\.]+([[А-ЯЁЇІЄҐ\1]+)[\s]*$[\s\r\n]+^ВИК[\s\.]+([[А-ЯЁЇІЄҐ\1]+){1}[\s]+([0-9\-\:]+)[\s]?";
+        private const string basePartRegex = @"[А-ЯЁЇІЄҐ\s\d\W]+^([А-ЯЁЇІЄҐ\s\d]*).НР[\s\.]+([0-9]*)?[\s]?$[\s]+^([А-ЯЁЇІЄҐ\d\/\s]+)[\s\n\r]+^([А-ЯЁЇІЄҐ\w\W\s]+)^[\s]*НР[\.]?[\s]*([\d\/\s\-]+[\s]*[\d]+)[\s]+([А-ЯЁЇІЄҐ\s\.\-0-9]+)[\r\n]^([\d]+[\s\.\\\/]+[\d]+[\s\.\\\/]+[\d]+)[\s]+([А-ЯЁЇІЄҐ\s\-\1]+)$[\s]+([А-ЯЁЇІЄҐ\-\1]+)?[\s]+([А-ЯЁЇІЄҐ\s\1\.]+)$[\r\n]?[\s\-]+";
+        private const string urgencyRegex = @"[\s\d]{10,}....(ТЕРМІНОВ.)";
 
         public static string FirstPartRegex => firstPartRegex;
 
@@ -396,8 +396,8 @@ namespace Telegraph
                 isNew = true;
             }
 
-             TelegramWindow = new TelegramWnd(tlg);
-
+            TelegramWindow = new TelegramWnd(tlg);
+            
             if (TelegramWindow.ShowDialog() == true)
             {
                 if (isNew)
