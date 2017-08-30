@@ -118,6 +118,15 @@
     <Compile Include="CustomValidationAttributes\ExcludeChar.cs" />
     <Compile Include="CustomValidationAttributes\Unique.cs" />
     <Compile Include="DocumentPaginatorWrapper.cs" />
+    <Compile Include="ImportCustomFilesPage.xaml.cs">
+      <DependentUpon>ImportCustomFilesPage.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="ImportPage.xaml.cs">
+      <DependentUpon>ImportPage.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="ImportWnd.xaml.cs">
+      <DependentUpon>ImportWnd.xaml</DependentUpon>
+    </Compile>
     <Compile Include="ViewModels\ApplicationViewModel.cs" />
     <Compile Include="Notification\PropertyChangeNotification.cs" />
     <Compile Include="Comands\RelayCommand.cs" />
@@ -129,6 +138,18 @@
     <Compile Include="ViewModels\MainViewModel.cs" />
     <Compile Include="ViewModels\ViewModelLocator.cs" />
     <Compile Include="WordDocument.cs" />
+    <Page Include="ImportCustomFilesPage.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="ImportPage.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="ImportWnd.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="TelegramWnd.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>

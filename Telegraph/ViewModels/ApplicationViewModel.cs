@@ -46,6 +46,7 @@ namespace Telegraph
         RelayCommand saveCommand;
         RelayCommand sendToWord;
         RelayCommand windowLoaded;
+        RelayCommand importCommand;
 
         public static ApplicationViewModel SharedViewModel()
         {
@@ -344,6 +345,22 @@ namespace Telegraph
                         string fileName = GetTempFile("docx");
                         new WordDocument(tlg).CreatePackage(fileName);
                         Process.Start(fileName);
+                    }));
+            }
+        }
+
+        public RelayCommand ImportCommand
+        {
+            get
+            {
+                return importCommand ??
+                    (importCommand = new RelayCommand((wnd) =>
+                    {
+                        ImportWnd importWnd = new ImportWnd();
+                        if(importWnd.ShowDialog() == true)
+                        {
+
+                        }
                     }));
             }
         }
