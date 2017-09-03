@@ -7,6 +7,6 @@
         mc:Ignorable="d"
         Title="Імпортування" Height="370" Width="500" ResizeMode="CanMinimize">
     <Grid>
-        <Frame Source="/Telegraph;component/ImportPage.xaml" NavigationUIVisibility="Hidden" />
+        <Frame Content="{Binding CurrentPage, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}" NavigationUIVisibility="Hidden" />
     </Grid>
 </Window>

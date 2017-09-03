@@ -13,7 +13,6 @@ namespace Telegraph
         public TlgManagerWnd()
         {
             InitializeComponent();
-            DataContext = ApplicationViewModel.SharedViewModel();
         }
 
         private void telegramsList_DragLeave(object sender, DragEventArgs e)

@@ -117,16 +117,16 @@
     </ApplicationDefinition>
     <Compile Include="CustomValidationAttributes\ExcludeChar.cs" />
     <Compile Include="CustomValidationAttributes\Unique.cs" />
-    <Compile Include="DocumentPaginatorWrapper.cs" />
-    <Compile Include="ImportCustomFilesPage.xaml.cs">
-      <DependentUpon>ImportCustomFilesPage.xaml</DependentUpon>
+    <Compile Include="Pages\Import\SelectFiles.xaml.cs">
+      <DependentUpon>SelectFiles.xaml</DependentUpon>
     </Compile>
-    <Compile Include="ImportPage.xaml.cs">
-      <DependentUpon>ImportPage.xaml</DependentUpon>
+    <Compile Include="Pages\Import\SelectImportType.xaml.cs">
+      <DependentUpon>SelectImportType.xaml</DependentUpon>
     </Compile>
     <Compile Include="ImportWnd.xaml.cs">
       <DependentUpon>ImportWnd.xaml</DependentUpon>
     </Compile>
+    <Compile Include="TelegramDataService.cs" />
     <Compile Include="ViewModels\ApplicationViewModel.cs" />
     <Compile Include="Notification\PropertyChangeNotification.cs" />
     <Compile Include="Comands\RelayCommand.cs" />
@@ -135,14 +135,15 @@
       <DependentUpon>TelegramWnd.xaml</DependentUpon>
     </Compile>
     <Compile Include="UrgencyConverter.cs" />
+    <Compile Include="ViewModels\ImportViewModel.cs" />
     <Compile Include="ViewModels\MainViewModel.cs" />
     <Compile Include="ViewModels\ViewModelLocator.cs" />
     <Compile Include="WordDocument.cs" />
-    <Page Include="ImportCustomFilesPage.xaml">
+    <Page Include="Pages\Import\SelectFiles.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="ImportPage.xaml">
+    <Page Include="Pages\Import\SelectImportType.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -1210,9 +1211,7 @@
   <ItemGroup>
     <None Include="Icons\edit.png" />
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="System\" />
-  </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="..\packages\System.Data.SQLite.Core.1.0.105.2\build\net45\System.Data.SQLite.Core.targets" Condition="Exists('..\packages\System.Data.SQLite.Core.1.0.105.2\build\net45\System.Data.SQLite.Core.targets')" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">

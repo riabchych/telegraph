@@ -12,6 +12,7 @@
   See http://www.galasoft.ch/mvvm
 */
 
+using GalaSoft.MvvmLight;
 using GalaSoft.MvvmLight.Ioc;
 using Microsoft.Practices.ServiceLocation;
 
@@ -23,35 +24,37 @@ namespace Telegraph.ViewModel
     /// </summary>
     public class ViewModelLocator
     {
+        private ITelegramDataService _dataService;
+        private ApplicationViewModel _app;
         /// <summary>
         /// Initializes a new instance of the ViewModelLocator class.
         /// </summary>
         public ViewModelLocator()
         {
             ServiceLocator.SetLocatorProvider(() => SimpleIoc.Default);
+            
 
-            ////if (ViewModelBase.IsInDesignModeStatic)
-            ////{
-            ////    // Create design time view services and models
-            ////    SimpleIoc.Default.Register<IDataService, DesignDataService>();
-            ////}
-            ////else
-            ////{
-            ////    // Create run time view services and models
-            ////    SimpleIoc.Default.Register<IDataService, DataService>();
-            ////}
+            ServiceLocator.SetLocatorProvider(() => SimpleIoc.Default);
+            if (ViewModelBase.IsInDesignModeStatic)
+            {
+                _dataService = new TelegramDataService();
+            }
+            else
+            {
+                _dataService = new TelegramDataService();
+            }
+            _app = new ApplicationViewModel(_dataService);
 
             SimpleIoc.Default.Register<MainViewModel>();
+            SimpleIoc.Default.Register<ApplicationViewModel>();
+            SimpleIoc.Default.Register<ImportViewModel>();
         }
 
-        public MainViewModel Main
+        public ApplicationViewModel App
         {
-            get
-            {
-                return ServiceLocator.Current.GetInstance<MainViewModel>();
-            }
+            get; private set;
         }
-        
+
         public static void Cleanup()
         {
             // TODO Clear the ViewModels

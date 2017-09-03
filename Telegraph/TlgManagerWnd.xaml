@@ -8,6 +8,7 @@
         xmlns:local="clr-namespace:Telegraph"
         xmlns:extToolkit="http://schemas.xceed.com/wpf/xaml/toolkit"
         mc:Ignorable="d"
+        DataContext="{Binding Source={StaticResource Locator}, Path=Main}"
         Title="Центр керування телеграмами" Height="500" Width="600" AllowDrop="True">
 
     <Window.Resources>
@@ -15,9 +16,7 @@
             <Setter Property="MaxWidth" Value="400" />
         </Style>
     </Window.Resources>
-    <Window.DataContext>
-        <local:ApplicationViewModel x:Name="VM" />
-    </Window.DataContext>
+    
     <i:Interaction.Triggers>
         <i:EventTrigger EventName="Loaded">
             <cmd:EventToCommand Command="{Binding WindowLoaded}" CommandParameter="{Binding ElementName=telegramsList}"/>

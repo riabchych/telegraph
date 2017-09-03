@@ -16,5 +16,13 @@ namespace Telegraph
             DataContext = Telegram;
             VM = ApplicationViewModel.SharedViewModel();
         }
+
+        public TelegramWnd(ApplicationViewModel vm, Telegram t)
+        {
+            InitializeComponent();
+            Telegram = t;
+            DataContext = Telegram;
+            VM = vm;
+        }
     }
 }

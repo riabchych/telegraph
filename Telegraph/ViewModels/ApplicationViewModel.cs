@@ -14,66 +14,28 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Threading;
+using Telegraph.ViewModel;
 
 namespace Telegraph
 {
-    struct TlgRegex
+
+    public class ApplicationViewModel : MainViewModel
     {
-        private const string firstPartRegex = @"^ВИК[\s\.]+([А-ЯЁЇІЄҐ\1]+){1}[\s]+([0-9\-\:]+){1}[\s]*$[\s\-]+^ПРД[\s\.]+([А-ЯЁЇІЄҐ\1]+){1}";
-        private const string secondPartRegex = @"^ПРД[\s\.]+([[А-ЯЁЇІЄҐ\1]+)[\s]*$[\s\r\n]+^ВИК[\s\.]+([[А-ЯЁЇІЄҐ\1]+){1}[\s]+([0-9\-\:]+)[\s]?";
-        private const string basePartRegex = @"[А-ЯЁЇІЄҐ\s\d\W]+^([А-ЯЁЇІЄҐ\s\d]*).НР[\s\.]+([0-9]*)?[\s]?$[\s]+^([А-ЯЁЇІЄҐ\d\/\s]+)[\s\n\r]+^([А-ЯЁЇІЄҐ\w\W\s]+)^[\s]*НР[\.]?[\s]*([\d\/\s\-]+[\s]*[\d]+)[\s]+([А-ЯЁЇІЄҐ\s\.\-0-9]+)[\r\n]^([\d]+[\s\.\\\/]+[\d]+[\s\.\\\/]+[\d]+)[\s]+([А-ЯЁЇІЄҐ\s\-\1]+)$[\s]+([А-ЯЁЇІЄҐ\-\1]+)?[\s]+([А-ЯЁЇІЄҐ\s\1\.]+)$[\r\n]?[\s\-]+";
-        private const string urgencyRegex = @"[\s\d]{10,}....(ТЕРМІНОВ.)";
-
-        public static string FirstPartRegex => firstPartRegex;
-
-        public static string SecondPartRegex => secondPartRegex;
-
-        public static string BasePartRegex => basePartRegex;
-
-        public static string UrgencyRegex => urgencyRegex;
-    }
-
-    public class ApplicationViewModel : PropertyChangedNotification
-    {
-        private ApplicationContext db;
-        private Task dbTask;
         private static ApplicationViewModel applicationViewModel;
+        private ITelegramDataService _dataService;
 
-        RelayCommand newCommand;
-        RelayCommand addCommand;
-        RelayCommand editCommand;
-        RelayCommand deleteCommand;
-        RelayCommand saveCommand;
-        RelayCommand sendToWord;
-        RelayCommand windowLoaded;
-        RelayCommand importCommand;
+        private RelayCommand newCommand;
+        private RelayCommand addCommand;
+        private RelayCommand editCommand;
+        private RelayCommand deleteCommand;
+        private RelayCommand saveCommand;
+        private RelayCommand sendToWord;
+        private RelayCommand windowLoaded;
+        private RelayCommand importCommand;
 
         public static ApplicationViewModel SharedViewModel()
         {
             return applicationViewModel ?? (applicationViewModel = new ApplicationViewModel());
-        }
-
-        public IEnumerable<Telegram> Telegrams
-        {
-            get { return GetValue(() => Telegrams); }
-            set { SetValue(() => Telegrams, value); }
-        }
-
-        ObservableCollection<Telegram> TelegramsCollection
-        {
-            get { return GetValue(() => TelegramsCollection); }
-            set { SetValue(() => TelegramsCollection, value); }
-        }
-
-        public CollectionViewSource TelegramsViewSource
-        {
-            get { return GetValue(() => TelegramsViewSource); }
-            set { SetValue(() => TelegramsViewSource, value); }
-        }
-
-        public ICollectionView SourceCollection
-        {
-            get { return TelegramsViewSource.View; }
         }
 
         public string FilterText
@@ -89,16 +51,7 @@ namespace Telegraph
         public int FilterType
         {
             get { return GetValue(() => FilterType); }
-            set
-            {
-                SetValue(() => FilterType, value);
-            }
-        }
-
-        public bool IsBusy
-        {
-            get { return GetValue(() => IsBusy); }
-            set { SetValue(() => IsBusy, value); }
+            set { SetValue(() => FilterType, value); }
         }
 
         public bool IsImport
@@ -114,30 +67,42 @@ namespace Telegraph
                 return windowLoaded ??
                   (windowLoaded = new RelayCommand((lv) =>
                   {
-                      ListView listview = lv as ListView;
-                      IsBusy = true;
-                      FilterType = 3;
-                      Db = new ApplicationContext();
-                      TelegramsViewSource = new CollectionViewSource();
-                      DbTask = Task.Factory.StartNew(async () =>
-                      {
-                          Db.Telegrams.Load();
 
-                          await DbTask;
-
-                          Application.Current.Dispatcher.Invoke(DispatcherPriority.Normal, (Action)delegate ()
-                          {
-                              IsBusy = false;
-                              Telegrams = Db.Telegrams.Local.ToBindingList();
-                              TelegramsViewSource.Source = new ObservableCollection<Telegram>(Telegrams);
-                              TelegramsViewSource.Filter += TelegramsFilter;
-                          });
-
-                      });
                   }));
             }
         }
-        public void RefreshViewSource()
+
+        public ApplicationViewModel()   { }
+
+        public ApplicationViewModel(ITelegramDataService dataService)
+        {
+            FilterType = 3;
+            TelegramsViewSource = new CollectionViewSource();
+            _dataService = dataService;
+            IsBusy = true;
+            DbTask = Task.Factory.StartNew(() =>
+            {
+                _dataService.LoadTelegrams(TelegramsLoaded, TelegramsLoadFiled);
+            });
+        }
+
+        private void TelegramsLoadFiled(Exception obj)
+        {
+            throw new NotImplementedException();
+        }
+
+        private void TelegramsLoaded(IEnumerable<Telegram> telegrams)
+        {
+            Application.Current.Dispatcher.Invoke(DispatcherPriority.Normal, (Action)delegate ()
+            {
+                IsBusy = false;
+                Telegrams = Db.Telegrams.Local.ToBindingList();
+                TelegramsViewSource.Source = new ObservableCollection<Telegram>(Telegrams);
+                TelegramsViewSource.Filter += TelegramsFilter;
+            });
+        }
+
+        private void RefreshViewSource()
         {
             TelegramsViewSource.Source = new ObservableCollection<Telegram>(Telegrams);
         }
@@ -150,61 +115,64 @@ namespace Telegraph
                 return;
             }
 
-            Telegram tlg = e.Item as Telegram;
             string result = null;
 
-            switch (FilterType)
+            if (e.Item is Telegram tlg)
             {
-                case 0:
-                    result = tlg.SelfNum.ToString();
-                    break;
-                case 1:
-                    result = tlg.IncNum.ToString();
-                    break;
-                case 2:
-                    result = tlg.From.ToString();
-                    break;
-                case 3:
-                    result = tlg.To.ToString();
-                    break;
-                case 4:
-                    result = tlg.Text.ToString();
-                    break;
-                case 5:
-                    result = tlg.SubNum.ToString();
-                    break;
-                case 6:
-                    result = tlg.Date.ToString();
-                    break;
-                case 7:
-                    result = tlg.SenderPos.ToString();
-                    break;
-                case 8:
-                    result = tlg.SenderRank.ToString();
-                    break;
-                case 9:
-                    result = tlg.SenderName.ToString();
-                    break;
-                case 10:
-                    result = tlg.Executor.ToString();
-                    break;
-                case 11:
-                    result = tlg.Phone.ToString();
-                    break;
-                case 12:
-                    result = tlg.HandedBy.ToString();
-                    break;
-                case 13:
-                    result = tlg.Dispatcher.ToString();
-                    break;
-                default:
-                    result = null;
-                    break;
+                switch (FilterType)
+                {
+                    case 0:
+                        result = tlg.SelfNum.ToString();
+                        break;
+                    case 1:
+                        result = tlg.IncNum.ToString();
+                        break;
+                    case 2:
+                        result = tlg.From.ToString();
+                        break;
+                    case 3:
+                        result = tlg.To.ToString();
+                        break;
+                    case 4:
+                        result = tlg.Text.ToString();
+                        break;
+                    case 5:
+                        result = tlg.SubNum.ToString();
+                        break;
+                    case 6:
+                        result = tlg.Date.ToString();
+                        break;
+                    case 7:
+                        result = tlg.SenderPos.ToString();
+                        break;
+                    case 8:
+                        result = tlg.SenderRank.ToString();
+                        break;
+                    case 9:
+                        result = tlg.SenderName.ToString();
+                        break;
+                    case 10:
+                        result = tlg.Executor.ToString();
+                        break;
+                    case 11:
+                        result = tlg.Phone.ToString();
+                        break;
+                    case 12:
+                        result = tlg.HandedBy.ToString();
+                        break;
+                    case 13:
+                        result = tlg.Dispatcher.ToString();
+                        break;
+                    default:
+                        result = null;
+                        break;
+                }
             }
+
             if (result == null)
                 e.Accepted = true;
             else
-                e.Accepted = (result.ToUpper().Contains(FilterText.ToUpper())) 
+                e.Accepted = (result.ToUpper().Contains(FilterText.ToUpper()))
                     ? true : false;
 
         }
@@ -228,8 +196,7 @@ namespace Telegraph
                 return saveCommand ??
                     (saveCommand = new RelayCommand((wnd) =>
                     {
-                        TelegramWnd telegramWindow = wnd as TelegramWnd;
-                        if(telegramWindow != null)
+                        if (wnd is TelegramWnd telegramWindow)
                             telegramWindow.DialogResult = true;
                     }));
             }
@@ -243,11 +210,11 @@ namespace Telegraph
                 return editCommand ??
                   (editCommand = new RelayCommand((selectedItem) =>
                   {
-                      if (selectedItem == null) return;
-                      // получаем выделенный объект
-                      Telegram tlg = selectedItem as Telegram;
-                      tlg = (Telegram)tlg.Clone();
-                      OpenTlgWnd(tlg);
+                      if (selectedItem is Telegram tlg)
+                      {
+                          tlg = (Telegram)tlg.Clone();
+                          OpenTlgWnd(tlg);
+                      }
 
                   }));
             }
@@ -305,11 +272,12 @@ namespace Telegraph
                 return deleteCommand ??
                     (deleteCommand = new RelayCommand((selectedItem) =>
                     {
-                        if (selectedItem == null) return;
-                        Telegram tlg = selectedItem as Telegram;
-                        Db.Telegrams.Remove(tlg);
-                        Db.SaveChanges();
-                        RefreshViewSource();
+                        if (selectedItem is Telegram tlg)
+                        {
+                            Db.Telegrams.Remove(tlg);
+                            Db.SaveChanges();
+                            RefreshViewSource();
+                        }
                     }));
             }
         }
@@ -329,7 +297,8 @@ namespace Telegraph
 
                         switch (type)
                         {
-                            case "Telegram": tlg = o as Telegram;
+                            case "Telegram":
+                                tlg = o as Telegram;
                                 break;
                             case "TelegramWnd":
                                 TelegramWnd wnd = o as TelegramWnd;
@@ -357,10 +326,12 @@ namespace Telegraph
                     (importCommand = new RelayCommand((wnd) =>
                     {
                         ImportWnd importWnd = new ImportWnd();
-                        if(importWnd.ShowDialog() == true)
+
+                        if (importWnd.ShowDialog() == true)
                         {
 
                         }
+                        importWnd = null;
                     }));
             }
         }
@@ -439,8 +410,8 @@ namespace Telegraph
                 isNew = true;
             }
 
-            TelegramWnd TelegramWindow = new TelegramWnd(tlg);
-            
+            TelegramWnd TelegramWindow = new TelegramWnd(this,tlg);
+
             if (TelegramWindow.ShowDialog() == true)
             {
                 if (isNew)
@@ -473,8 +444,6 @@ namespace Telegraph
                 Db.SaveChanges();
                 RefreshViewSource();
             }
-
-
         }
 
         private bool CheckData(Telegram data)
@@ -499,33 +468,5 @@ namespace Telegraph
                 return true;
             }
         }
-
-        private string GetTempFile(string fileExtension)
-        {
-            string temp = System.IO.Path.GetTempPath();
-            string res = string.Empty;
-            while (true)
-            {
-                res = string.Format("{0}.{1}", Guid.NewGuid().ToString(), fileExtension);
-                res = System.IO.Path.Combine(temp, res);
-                if (!System.IO.File.Exists(res))
-                {
-                    try
-                    {
-                        System.IO.FileStream s = System.IO.File.Create(res);
-                        s.Close();
-                        break;
-                    }
-                    catch (Exception)
-                    {
-
-                    }
-                }
-            }
-            return res;
-        }
-
-        public ApplicationContext Db { get => db; set => db = value; }
-        public Task DbTask { get => dbTask; set => dbTask = value; }
     }
 }
