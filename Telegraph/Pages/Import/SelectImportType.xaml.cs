@@ -1,5 +1,5 @@
 ﻿using System.Windows.Controls;
-using Telegraph.ViewModel;
+using Telegraph.ViewModels;
 
 namespace Telegraph.Pages.Import
 {
@@ -11,7 +11,6 @@ namespace Telegraph.Pages.Import
         public SelectImportType()
         {
             InitializeComponent();
-            DataContext = ImportViewModel.SharedViewModel();
         }
 
     }

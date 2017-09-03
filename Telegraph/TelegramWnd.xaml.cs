@@ -1,4 +1,5 @@
 ﻿using System.Windows;
+using Telegraph.ViewModels;
 
 namespace Telegraph
 {
@@ -7,22 +8,9 @@ namespace Telegraph
     /// </summary>
     public partial class TelegramWnd : Window
     {
-        public Telegram Telegram { get; set; }
-        
-        public TelegramWnd(Telegram t)
+        public TelegramWnd()
         {
             InitializeComponent();
-            Telegram = t;
-            DataContext = Telegram;
-            VM = ApplicationViewModel.SharedViewModel();
-        }
-
-        public TelegramWnd(ApplicationViewModel vm, Telegram t)
-        {
-            InitializeComponent();
-            Telegram = t;
-            DataContext = Telegram;
-            VM = vm;
         }
     }
 }

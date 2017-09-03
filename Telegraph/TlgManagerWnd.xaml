@@ -8,7 +8,7 @@
         xmlns:local="clr-namespace:Telegraph"
         xmlns:extToolkit="http://schemas.xceed.com/wpf/xaml/toolkit"
         mc:Ignorable="d"
-        DataContext="{Binding Source={StaticResource Locator}, Path=Main}"
+        DataContext="{Binding App, Mode=OneWay, Source={StaticResource Locator}}"
         Title="Центр керування телеграмами" Height="500" Width="600" AllowDrop="True">
 
     <Window.Resources>
@@ -16,12 +16,6 @@
             <Setter Property="MaxWidth" Value="400" />
         </Style>
     </Window.Resources>
-    
-    <i:Interaction.Triggers>
-        <i:EventTrigger EventName="Loaded">
-            <cmd:EventToCommand Command="{Binding WindowLoaded}" CommandParameter="{Binding ElementName=telegramsList}"/>
-        </i:EventTrigger>
-    </i:Interaction.Triggers>
 
     <extToolkit:BusyIndicator BusyContent="Завантаження, будь ласка, зачекайте..." IsBusy="{Binding IsBusy}">
         <Grid>
@@ -53,7 +47,7 @@
             </Menu>
             <ToolBarTray Grid.Row="1" ScrollViewer.VerticalScrollBarVisibility="Disabled" Grid.IsSharedSizeScope="True" VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
                 <ToolBar Height="32" HorizontalAlignment="Stretch">
-                    <Button ToolTip="Створити" Command="{Binding NewCommand}" CommandParameter="" VerticalAlignment="Stretch" Margin="0,0,5,-3" >
+                    <Button ToolTip="Створити" Command="{Binding NewCommand}" VerticalAlignment="Stretch" Margin="0,0,5,-3" >
                         <Image Source="Icons/page_white.png"></Image>
                     </Button>
                     <Button ToolTip="Додати" Command="{Binding AddCommand}"  VerticalAlignment="Stretch" Margin="0,0,5,-3" >
@@ -61,22 +55,21 @@
                     </Button>
 
                     <Separator/>
-
-                    <Button ToolTip="Редагувати" Command="{Binding EditCommand}" IsEnabled="{Binding SelectedItems.Count, ElementName=telegramsList}" CommandParameter="{Binding SelectedItem, ElementName=telegramsList}" VerticalAlignment="Stretch" Margin="0,0,5,-3" >
+                    <Button ToolTip="Редагувати" Command="{Binding EditCommand}" VerticalAlignment="Stretch" Margin="0,0,5,-3" >
                         <Image Source="Icons/page_white_edit.png"/>
                     </Button>
 
-                    <Button ToolTip="Видалити" Command="{Binding DeleteCommand}" IsEnabled="{Binding ElementName=telegramsList, Path=SelectedItems.Count}" CommandParameter="{Binding ElementName=telegramsList, Path=SelectedItem}" VerticalAlignment="Stretch" Margin="0,0,5,-3">
+                    <Button ToolTip="Видалити" Command="{Binding DeleteCommand}" VerticalAlignment="Stretch" Margin="0,0,5,-3">
                         <Image Source="Icons/page_white_delete.png"></Image>
                     </Button>
 
                     <Separator/>
 
-                    <Button ToolTip="Відкрити в  Word" Command="{Binding SendToWord}" IsEnabled="{Binding ElementName=telegramsList, Path=SelectedItems.Count}" CommandParameter="{Binding ElementName=telegramsList, Path=SelectedItem}" VerticalAlignment="Stretch" Margin="0,0,5,-3">
+                    <Button ToolTip="Відкрити в  Word" Command="{Binding SendToWord}" VerticalAlignment="Stretch" Margin="0,0,5,-3">
                         <Image Source="Icons/page_white_word.png"></Image>
                     </Button>
 
-                    <Button ToolTip="Друк" Command="{Binding DeleteCommand}" IsEnabled="{Binding ElementName=telegramsList, Path=SelectedItems.Count}" CommandParameter="{Binding ElementName=telegramsList, Path=SelectedItem}" VerticalAlignment="Stretch" Margin="0,0,5,-3">
+                    <Button ToolTip="Друк" Command="{Binding PrintCommand}" VerticalAlignment="Stretch" Margin="0,0,5,-3">
                         <Image Source="Icons/printer.png"></Image>
                     </Button>
 
@@ -109,47 +102,11 @@
                             <ComboBoxItem>Передав</ComboBoxItem>
                             <ComboBoxItem>Прийняв</ComboBoxItem>
                         </ComboBox>
-                        <TextBox Grid.Column="2" Text="{Binding FilterText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Margin="4,3,0,3"/>
+                        <TextBox Grid.Column="2" Text="{Binding FilterText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Margin="4,3,0,3" SpellCheck.IsEnabled="True"/>
                     </Grid>
                 </ToolBar>
             </ToolBarTray>
-            <ListView Grid.Row="2" x:Name="telegramsList"  ItemsSource="{Binding TelegramsViewSource.View}" VerticalContentAlignment="Center" BorderBrush="Khaki" DragLeave="telegramsList_DragLeave" DragEnter="telegramsList_DragEnter" Drop="telegramsList_Drop">
-                <i:Interaction.Triggers>
-                    <i:EventTrigger EventName="Drop">
-                        <cmd:EventToCommand Command="{Binding AddCommand}" PassEventArgsToCommand="True"  />
-                    </i:EventTrigger>
-                    <i:EventTrigger EventName="MouseDoubleClick">
-                        <cmd:EventToCommand Command="{Binding EditCommand}" CommandParameter="{Binding ElementName=telegramsList, Path=SelectedItem}" />
-                    </i:EventTrigger>
-                </i:Interaction.Triggers>
-
-                <ListView.View>
-                    <GridView>
-                        <GridViewColumn Width="50" Header="ID" DisplayMemberBinding="{Binding SelfNum}"  />
-                        <GridViewColumn Width="75" Header="Номер"  DisplayMemberBinding="{Binding IncNum}"  />
-                        <GridViewColumn Width="100" Header="Підписний"  DisplayMemberBinding="{Binding SubNum}" />
-                        <GridViewColumn Width="70" Header="Дата" DisplayMemberBinding="{Binding Date}" />
-                        <GridViewColumn Width="90" Header="Виконавець"  DisplayMemberBinding="{Binding Executor}" />
-                        <GridViewColumn Width="90" Header="Еспедитор"  DisplayMemberBinding="{Binding Dispatcher}" />
-                        <GridViewColumn Width="80" Header="Терміновість"  DisplayMemberBinding="{Binding Urgency}" />
-                    </GridView>
-                </ListView.View>
-
-                <ListView.Resources>
-                    <Style TargetType="{x:Type GridViewColumnHeader}">
-                        <Setter Property="HorizontalContentAlignment" Value="Left" />
-                    </Style>
-                </ListView.Resources>
-
-                <ListView.ItemContainerStyle>
-                    <Style TargetType="{x:Type ListViewItem}">
-                        <Setter Property="ToolTip" Value="{Binding Text}" />
-                        <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
-                    </Style>
-
-                </ListView.ItemContainerStyle>
-            </ListView>
-
+            <local:TelegramListControl Grid.Row="2"></local:TelegramListControl>
             <StatusBar Grid.Row="3">
                 <StatusBar.ItemsPanel>
                     <ItemsPanelTemplate>

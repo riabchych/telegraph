@@ -1,17 +1,11 @@
 using System.Windows.Controls;
 
-namespace Telegraph.ViewModel
+namespace Telegraph.ViewModels
 {
 
     public class ImportViewModel: MainViewModel
     {
-        private static ImportViewModel importViewModel;
         private RelayCommand showPageRestoreFromFiles;
-
-        public static ImportViewModel SharedViewModel()
-        {
-            return importViewModel ?? (importViewModel = new ImportViewModel());
-        }
 
         public ImportViewModel InitPages()
         {

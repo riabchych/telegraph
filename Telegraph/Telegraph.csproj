@@ -127,6 +127,9 @@
       <DependentUpon>ImportWnd.xaml</DependentUpon>
     </Compile>
     <Compile Include="TelegramDataService.cs" />
+    <Compile Include="TelegramListControl.xaml.cs">
+      <DependentUpon>TelegramListControl.xaml</DependentUpon>
+    </Compile>
     <Compile Include="ViewModels\ApplicationViewModel.cs" />
     <Compile Include="Notification\PropertyChangeNotification.cs" />
     <Compile Include="Comands\RelayCommand.cs" />
@@ -148,6 +151,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="ImportWnd.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="TelegramListControl.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

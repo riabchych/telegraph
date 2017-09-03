@@ -1,5 +1,5 @@
 ﻿using System.Windows;
-using Telegraph.ViewModel;
+using Telegraph.ViewModels;
 
 namespace Telegraph
 {
@@ -11,7 +11,6 @@ namespace Telegraph
         public ImportWnd()
         {
             InitializeComponent();
-            DataContext = ImportViewModel.SharedViewModel().InitPages();
         }
     }
 }
