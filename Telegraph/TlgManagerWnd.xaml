@@ -86,7 +86,7 @@
                         </Grid.ColumnDefinitions>
 
                         <TextBlock Text="Фільтр:" HorizontalAlignment="Left" Width="39" Margin="0,4,4,6" />
-                        <ComboBox Grid.Column="1" IsReadOnly="True" SelectedIndex="{Binding FilterType, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}" Margin="0,2,0,2">
+                        <ComboBox Grid.Column="1" IsReadOnly="True"  Margin="0,2,0,2" SelectedIndex="{Binding FilterType, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}" >
                             <ComboBoxItem>ID</ComboBoxItem>
                             <ComboBoxItem>Вхідний номер</ComboBoxItem>
                             <ComboBoxItem>Відправник</ComboBoxItem>
@@ -122,7 +122,7 @@
                     </ItemsPanelTemplate>
                 </StatusBar.ItemsPanel>
                 <StatusBarItem>
-                    <TextBlock Name="StatusIndicator" Text="Готово"></TextBlock>
+                    <TextBlock Name="StatusText" Text="{Binding StatusText}"></TextBlock>
                 </StatusBarItem>
                 <StatusBarItem Grid.Column="1">
                     <!--<ProgressBar Width="100" Height="17" Name="ProgressBar" VerticalAlignment="Center" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" HorizontalAlignment="Right">

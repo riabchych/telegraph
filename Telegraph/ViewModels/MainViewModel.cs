@@ -1,7 +1,5 @@
-using GalaSoft.MvvmLight;
 using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Threading.Tasks;
 using System.Windows.Controls;
@@ -9,7 +7,7 @@ using System.Windows.Data;
 
 namespace Telegraph.ViewModels
 {
-    public class MainViewModel : PropertyChangedNotification
+    public abstract class MainViewModel : PropertyChangedNotification
     {
         protected struct TlgRegex
         {
@@ -28,20 +26,18 @@ namespace Telegraph.ViewModels
         private ApplicationContext db;
         private Task dbTask;
 
-        public string GetTempFile(string fileExtension)
+        protected string GetTempFile(string fileExtension)
         {
-            string temp = System.IO.Path.GetTempPath();
             string res = string.Empty;
+
             while (true)
             {
-                res = string.Format("{0}.{1}", Guid.NewGuid().ToString(), fileExtension);
-                res = System.IO.Path.Combine(temp, res);
+                res = System.IO.Path.ChangeExtension(System.IO.Path.GetTempFileName(), fileExtension);
                 if (!System.IO.File.Exists(res))
                 {
                     try
                     {
-                        System.IO.FileStream s = System.IO.File.Create(res);
-                        s.Close();
+                        System.IO.File.Create(res).Close();
                         break;
                     }
                     catch (Exception)
@@ -53,16 +49,24 @@ namespace Telegraph.ViewModels
             return res;
         }
 
+        protected bool CheckData(Telegram data) => ((data.IncNum < 1) ||
+                string.IsNullOrWhiteSpace(data.From) ||
+                string.IsNullOrWhiteSpace(data.To) ||
+                string.IsNullOrWhiteSpace(data.Text) ||
+                string.IsNullOrWhiteSpace(data.SubNum) ||
+                string.IsNullOrWhiteSpace(data.Date) ||
+                string.IsNullOrWhiteSpace(data.SenderPos) ||
+                string.IsNullOrWhiteSpace(data.SenderRank) ||
+                string.IsNullOrWhiteSpace(data.SenderName) ||
+                string.IsNullOrWhiteSpace(data.Executor) ||
+                string.IsNullOrWhiteSpace(data.Phone) ||
+                string.IsNullOrWhiteSpace(data.HandedBy))
+            ? false : true;
+
         public IEnumerable<Telegram> Telegrams
         {
             get { return GetValue(() => Telegrams); }
             set { SetValue(() => Telegrams, value); }
-        }
-
-        public ObservableCollection<Telegram> TelegramsCollection
-        {
-            get { return GetValue(() => TelegramsCollection); }
-            set { SetValue(() => TelegramsCollection, value); }
         }
 
         public CollectionViewSource TelegramsViewSource
@@ -88,9 +92,9 @@ namespace Telegraph.ViewModels
             set { SetValue(() => IsBusy, value); }
         }
 
-        public Task DbTask { get => dbTask; set => dbTask = value; }
-        public ApplicationContext Db { get => db; set => db = value; }
-        public Page SelectFiles { get => selectFiles; set => selectFiles = value; }
-        public Page SelectImportType { get => selectImportType; set => selectImportType = value; }
+        protected Task DbTask { get => dbTask; set => dbTask = value; }
+        protected ApplicationContext Db { get => db; set => db = value; }
+        protected Page SelectFiles { get => selectFiles; set => selectFiles = value; }
+        protected Page SelectImportType { get => selectImportType; set => selectImportType = value; }
     }
 }

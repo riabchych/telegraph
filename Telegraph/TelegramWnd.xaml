@@ -24,9 +24,6 @@
             </Style.Triggers>
             <Setter Property="Margin" Value="8" />
         </Style>
-        <Style TargetType="{x:Type ComboBox}">
-            <Setter Property="Margin" Value="8" />
-        </Style>
     </Window.Resources>
     <Grid>
         <Grid.RowDefinitions>
