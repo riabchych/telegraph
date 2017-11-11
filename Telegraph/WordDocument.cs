@@ -536,6 +536,43 @@ namespace Telegraph
 
             paragraph17.Append(paragraphProperties17);
 
+            Paragraph paragraphUrgency = new Paragraph() { RsidParagraphMarkRevision = "008A318F", RsidParagraphAddition = "00A326FF", RsidParagraphProperties = "00B54B20", RsidRunAdditionDefault = "008A318F" };
+
+            ParagraphProperties paragraphPropertiesUrgency = new ParagraphProperties();
+            ParagraphStyleId paragraphStyleIdUrgency = new ParagraphStyleId() { Val = "a3" };
+
+            ParagraphMarkRunProperties paragraphMarkRunPropertiesUrgency = new ParagraphMarkRunProperties();
+            FontSize fontSize22Urgency = new FontSize() { Val = "24" };
+            Bold fontBold = new Bold();
+            Languages languagesUrgency = new Languages() { Val = "ua-UA" };
+            Justification justification = new Justification() { Val = JustificationValues.Right };
+
+            paragraphMarkRunPropertiesUrgency.Append(fontSize22Urgency);
+            paragraphMarkRunPropertiesUrgency.Append(languagesUrgency);
+
+            paragraphPropertiesUrgency.Append(paragraphStyleIdUrgency);
+            paragraphPropertiesUrgency.Append(justification);
+            paragraphPropertiesUrgency.Append(paragraphMarkRunPropertiesUrgency);
+
+            Run runUrgency = new Run();
+
+            RunProperties runPropertiesUrgency = new RunProperties();
+            FontSize fontSize23Urgency = new FontSize() { Val = "24" };
+            Languages languages4Urgency = new Languages() { Val = "ua-UA" };
+
+            runPropertiesUrgency.Append(fontSize23Urgency);
+            runPropertiesUrgency.Append(languages4Urgency);
+            runPropertiesUrgency.Append(fontBold);
+            Text textUrgency = new Text();
+            textUrgency.Text = "-=ТЕРМІНОВА=-";
+
+            runUrgency.Append(runPropertiesUrgency);
+            runUrgency.Append(textUrgency);
+
+            paragraphUrgency.Append(paragraphPropertiesUrgency);
+            paragraphUrgency.Append(runUrgency);
+            
+            
             Paragraph paragraph18 = new Paragraph() { RsidParagraphMarkRevision = "008A318F", RsidParagraphAddition = "00A326FF", RsidParagraphProperties = "00B54B20", RsidRunAdditionDefault = "008A318F" };
 
             ParagraphProperties paragraphProperties18 = new ParagraphProperties();
@@ -1402,6 +1439,10 @@ namespace Telegraph
             body1.Append(paragraph15);
             body1.Append(paragraph16);
             body1.Append(paragraph17);
+            if (telegram.Urgency == 1)
+            {
+                body1.Append(paragraphUrgency);
+            }
             body1.Append(paragraph18);
             body1.Append(paragraph19);
             body1.Append(paragraph20);
