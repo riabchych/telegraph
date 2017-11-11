@@ -55,7 +55,7 @@
                     <TextBlock Text="Дата" Grid.Row="4" />
 
                     <RadioButton Grid.Column="1" Margin="10,10,0,8" GroupName="UrgencyGroup" Content="Проста" IsChecked="{Binding ActiveTelegram.Urgency, ConverterParameter=0, Converter={StaticResource urgencyConverterKey}}"  HorizontalAlignment="Left" Width="70" />
-                    <RadioButton Grid.Column="1" Margin="85,10,0,8" GroupName="UrgencyGroup" Content="Термінова" IsChecked="{Binding ActiveTelegram.Urgency, ConverterParameter=1, Converter={StaticResource urgencyConverterKey}}" HorizontalAlignment="Left" Width="80" />
+                    <RadioButton Grid.Column="1" Margin="85,10,0,8" GroupName="UrgencyGroup" Content="Термінова" IsChecked="{Binding ActiveTelegram.Urgency, ConverterParameter=1, Converter={StaticResource urgencyConverterKey}}" HorizontalAlignment="Left" Width="80" IsEnabled="False" />
 
                     <TextBox Text="{Binding ActiveTelegram.SelfNum, Mode=TwoWay, UpdateSourceTrigger=LostFocus, ValidatesOnDataErrors=True, NotifyOnValidationError=True}" Grid.Column="1" Grid.Row="1" CharacterCasing="Upper" FontFamily="Courier New" MaxLines="1"/>
                     <TextBox Text="{Binding ActiveTelegram.Text, Mode=TwoWay, UpdateSourceTrigger=LostFocus, ValidatesOnDataErrors=True,NotifyOnValidationError=True}" Grid.Column="1" Grid.Row="2" CharacterCasing="Upper" FontFamily="Courier New" TextWrapping="Wrap" VerticalScrollBarVisibility="Auto" TextAlignment="Justify" AcceptsTab="True" AcceptsReturn="True" />

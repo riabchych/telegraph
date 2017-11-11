@@ -1,5 +1,8 @@
-﻿using IFilterTextReader;
+﻿using GalaSoft.MvvmLight.Messaging;
+using IFilterTextReader;
+using Microsoft.Practices.ServiceLocation;
 using Microsoft.Win32;
+using MvvmDialogs;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -10,15 +13,17 @@ using System.Text.RegularExpressions;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
+using Telegraph.LogModule.Loggers;
 
 namespace Telegraph.ViewModels
 {
-
     public class ApplicationViewModel : MainViewModel
     {
         private static ApplicationViewModel applicationViewModel;
-        private ITelegramDataService _dataService;
-
+        private readonly ITelegramDataService dataService;
+        private readonly IDialogService dialogService;
+        private readonly ILogger logger;
+        private ImportWnd importWnd;
         private RelayCommand newCommand;
         private RelayCommand addCommand;
         private RelayCommand editCommand;
@@ -49,7 +54,6 @@ namespace Telegraph.ViewModels
             set { SetValue(() => StatusText, value); }
         }
 
-
         public int FilterType
         {
             get { return GetValue(() => FilterType); }
@@ -68,20 +72,15 @@ namespace Telegraph.ViewModels
             set { SetValue(() => ActiveTelegram, value); }
         }
 
-        public ApplicationViewModel() { }
-
-        public ApplicationViewModel(ITelegramDataService dataService)
+        public ApplicationViewModel()
         {
+            dialogService = ServiceLocator.Current.GetInstance<IDialogService>();
+            dataService = ServiceLocator.Current.GetInstance<ITelegramDataService>();
+            logger = ServiceLocator.Current.GetInstance<ILogger>();
             TelegramsViewSource = new CollectionViewSource();
             StatusText = "Завантаження даних...";
-            _dataService = dataService;
             IsBusy = true;
-            _dataService.LoadTelegrams(TelegramsLoaded, TelegramsLoadFiled);
-        }
-
-        private void TelegramsLoadFiled(Exception obj)
-        {
-            throw new NotImplementedException();
+            dataService.LoadTelegrams(TelegramsLoaded);
         }
 
         private void TelegramsLoaded(IEnumerable<Telegram> telegrams)
@@ -90,6 +89,17 @@ namespace Telegraph.ViewModels
             TelegramsViewSource.Filter += TelegramsFilter;
             RefreshViewSource(Telegrams);
             IsBusy = false;
+        }
+
+        private void ShowError(string text)
+        {
+            logger.Error(text);
+            dialogService.ShowMessageBox(
+              this,
+              text,
+              "Помилка",
+              MessageBoxButton.OK,
+              MessageBoxImage.Error);
         }
 
         public RelayCommand NewCommand
@@ -153,14 +163,14 @@ namespace Telegraph.ViewModels
                           if (result == true)
                           {
                               files = dlg.FileNames;
-                              GetTelegrams(files);
+                              ImportTelegrams(files);
                           }
                       }
                       else
                       {
                           DragEventArgs e = o as DragEventArgs;
                           files = (string[])e.Data.GetData(DataFormats.FileDrop);
-                          GetTelegrams(files);
+                          ImportTelegrams(files);
                       }
                   }));
             }
@@ -175,7 +185,7 @@ namespace Telegraph.ViewModels
                     {
                         if (ActiveTelegram is Telegram)
                         {
-                            _dataService.RemoveTelegram(ActiveTelegram, RefreshViewSource);
+                            dataService.RemoveTelegram(ActiveTelegram, RefreshViewSource);
                         }
                     }));
             }
@@ -188,12 +198,25 @@ namespace Telegraph.ViewModels
                 return sendToWord ??
                     (sendToWord = new RelayCommand((o) =>
                     {
-                        if (ActiveTelegram == null)
-                            return;
+                        try
+                        {
+                            if (ActiveTelegram == null)
+                                return;
 
-                        string fileName = GetTempFile("docx");
-                        new WordDocument(ActiveTelegram).CreatePackage(fileName);
-                        Process.Start(fileName);
+                            if (!isMSWordInstalled())
+                            {
+                                throw new Exception(message: "Microsoft Office Word не інстальований у Вашій системі");
+                            }
+                            string fileName = GetTempFile("docx");
+                            new WordDocument(ActiveTelegram).CreatePackage(fileName);
+                            logger.Debug(String.Format("\"{0}\" створений успішно.", fileName));
+                            logger.Info(String.Format("\"{0}\" відкриваєтья в Microsoft Office Word", fileName));
+                            Process.Start(fileName);
+                        }
+                        catch (Exception e)
+                        {
+                            logger.Error(e.Message);
+                        }
                     }));
             }
         }
@@ -207,9 +230,9 @@ namespace Telegraph.ViewModels
                     {
                         string fileName = GetTempFile("docx");
                         new WordDocument(ActiveTelegram).CreatePackage(fileName);
-
+                        logger.Debug(String.Format("\"{0}\" створений успішно.", fileName));
                         PrintDialog printDialog = new PrintDialog();
-
+                        logger.Debug("Відкривається вікно друку...");
                         if (printDialog.ShowDialog() == true)
                         {
                             ProcessStartInfo info = new ProcessStartInfo(fileName)
@@ -220,6 +243,7 @@ namespace Telegraph.ViewModels
                                 Verb = "PrintTo"
                             };
                             Process.Start(info);
+                            logger.Info(String.Format("Виконується друк документу \"{0}\".", fileName));
                         }
                     }));
             }
@@ -232,105 +256,169 @@ namespace Telegraph.ViewModels
                 return importCommand ??
                     (importCommand = new RelayCommand((wnd) =>
                     {
-                        CurrentPage = new Pages.Import.SelectImportType();
-                        ImportWnd importWnd = new ImportWnd();
+                        ServiceLocator.Current.GetInstance<ImportViewModel>().SelectImportTypePage = 
+                            new Pages.Import.SelectImportTypePage();
+                        ServiceLocator.Current.GetInstance<ImportViewModel>().CurrentPage = 
+                            ServiceLocator.Current.GetInstance<ImportViewModel>().SelectImportTypePage;
 
-                        if (importWnd.ShowDialog() == true)
+                        ImportWnd = new ImportWnd();
+
+                        if (ImportWnd.ShowDialog() == true)
                         {
 
                         }
+                        ImportWnd = null;
                     }));
             }
         }
 
-        private void GetTelegrams(string[] files)
-        {
-            if (files == null)
-                return;
+        public ImportWnd ImportWnd { get => importWnd; set => importWnd = value; }
 
-            foreach (string filePath in files)
+        public bool ImportTelegrams(string filePath)
+        {
+            if ((ActiveTelegram = HandleTelegrams(filePath, true)) == null)
+            {
+                Messenger.Default.Send(new ImportWnd());
+                return false;
+            }
+            else
             {
                 try
                 {
-                    string ext = Path.GetExtension(filePath);
-                    if (!(ext.Equals(".doc") || ext.Equals(".docx")))
+                    if (!CheckData(ActiveTelegram))
                     {
-                        continue;
+                        throw new Exception(message: $"Не вдалося отримати деяку інформацію, перевірте структуру документа \"{filePath}\".");
                     }
-                    else
-                    {
-                        using (TextReader reader = new FilterReader(filePath))
-                        {
-                            string docText = reader.ReadToEnd().ToUpper();
 
-                            if (string.IsNullOrWhiteSpace(docText))
-                                throw new Exception(message: "Документ якиий Ви намагаєтесь відкрити не містить данних.");
-
-                            string regexString = string.Concat(TlgRegex.BasePartRegex, TlgRegex.FirstPartRegex);
-                            Regex regex = new Regex(regexString, RegexOptions.Multiline, TimeSpan.FromSeconds(3));
-                            GroupCollection groups = null;
-                            try
-                            {
-                                groups = regex.Match(docText).Groups;
-                            }
-                            catch
-                            {
-                                throw new Exception(message: "Не вдалося отримати інформацію, перевірте чи не порушена структура документа.");
-                            }
-                            if (groups.Count < 2)
-                            {
-                                regexString = string.Concat(TlgRegex.BasePartRegex, TlgRegex.SecondPartRegex);
-                                regex = new Regex(regexString, RegexOptions.Multiline);
-                                groups = regex.Match(docText).Groups;
-                                if (groups.Count < 2)
-                                {
-                                    throw new Exception(message: "Не вдалося отримати інформацію, перевірте чи не порушена структура документа.");
-                                }
-                            }
-
-                            bool isUrgency = new Regex(TlgRegex.UrgencyRegex).IsMatch(docText);
-                            string num = groups[2].Value.Trim().ToString();
-                            int number = Int32.Parse((!string.IsNullOrWhiteSpace(num)) ? num : "0");
-
-                            ActiveTelegram = new Telegram()
-                            {
-                                SelfNum = 0,
-                                IncNum = number,
-                                From = groups[1].Value.Trim(),
-                                To = groups[3].Value.Trim(),
-                                Text = groups[4].Value.Trim(),
-                                SubNum = groups[5].Value.Trim(),
-                                Date = groups[7].Value.Trim(),
-                                SenderPos = string.Concat(groups[6].Value.Trim(), " ", groups[8].Value.Trim()),
-                                SenderRank = groups[9].Value.Trim(),
-                                SenderName = groups[10].Value.Trim(),
-                                Executor = groups[11].Value.Trim(),
-                                Phone = groups[12].Value.Trim(),
-                                HandedBy = groups[13].Value.Trim(),
-                                Urgency = isUrgency ? 1 : 0,
-                                Dispatcher = string.Empty,
-                                Time = string.Empty
-                            };
-
-                            if (CheckData(ActiveTelegram))
-                            {
-                                OpenTlgWnd(ActiveTelegram);
-                            }
-                            else
-                            {
-                                throw new Exception(message: "Не вдалося отримати деяку інформацію, перевірте структуру документа");
-                            }
-                        }
-                    }
+                    dataService.AddTelegram(ActiveTelegram);
+                    return true;
                 }
-                catch
+                catch (Exception e)
                 {
-
+                    ShowError(e.Message);
+                    bool result = OpenTlgWnd(ActiveTelegram);
+                    Messenger.Default.Send(new ImportWnd());
+                    return result;
                 }
             }
         }
 
-        private void OpenTlgWnd(Telegram tlg = null)
+        public bool ImportTelegrams(string[] files)
+        {
+            if (files == null)
+            {
+                return false;
+            }
+            else
+            {
+                foreach (string filePath in files)
+                {
+                    if ((ActiveTelegram = HandleTelegrams(filePath)) == null)
+                    {
+                        return false;
+                    }
+                    else
+                    {
+                        try
+                        {
+                            if (!CheckData(ActiveTelegram))
+                            {
+                                throw new Exception(message: $"Не вдалося отримати деяку інформацію, перевірте структуру документа \"{filePath}\".");
+                            }
+                        }
+                        catch (Exception e)
+                        {
+                            ShowError(e.Message);
+                        }
+                        return OpenTlgWnd(ActiveTelegram);
+                    }
+                }
+                return true;
+            }
+        }
+
+        private Telegram HandleTelegrams(string filePath, bool isImport = false)
+        {
+            try
+            {
+                if (string.IsNullOrWhiteSpace(filePath) || !File.Exists(filePath))
+                {
+                    throw new FileNotFoundException("Неможливо імпортувати телеграму, файл з даним іменем не існує.", filePath);
+                }
+                else
+                {
+                    string ext = Path.GetExtension(filePath);
+                    if (!(ext.Equals(".doc") || ext.Equals(".docx")))
+                    {
+                        return null;
+                    }
+                }
+            }
+            catch (Exception e)
+            {
+                if (isImport) return null;
+                ShowError(e.Message);
+                return null;
+            }
+            try
+            {
+                using (TextReader reader = new FilterReader(filePath))
+                {
+                    if ((reader.ReadToEnd() is string docText))
+                    {
+                        if (string.IsNullOrWhiteSpace(docText = docText.ToUpper()))
+                        {
+                            throw new Exception(message: $"Файл \"{filePath}\" не містить даних.");
+                        }
+
+                        string regexString = string.Concat(TlgRegex.MainRegex, TlgRegex.FooterRegex);
+                        Regex regex = new Regex(regexString, RegexOptions.Multiline, TimeSpan.FromSeconds(3));
+                        GroupCollection groups = null;
+                        groups = regex.Match(input: docText).Groups;
+
+                        if (groups.Count < 2)
+                        {
+                            throw new Exception(message: $"Не вдалося отримати інформацію, перевірте чи не порушена структура документу \"{filePath}\".");
+                        }
+
+                        bool isUrgency = new Regex(pattern: TlgRegex.UrgencyRegex).IsMatch(docText);
+
+                        return ActiveTelegram = new Telegram()
+                        {
+                            SelfNum = Convert.ToInt32(value: groups[1].Value.Trim() ?? "0"),
+                            From = groups[2].Value.Trim(),
+                            IncNum = Convert.ToInt32(value: groups[3].Value.Trim() ?? "0"),
+                            To = groups[4].Value.Trim(),
+                            Text = groups[5].Value.Trim(),
+                            SubNum = groups[6].Value.Trim(),
+                            Date = groups[8].Value.Trim(),
+                            SenderPos = string.Concat(str0: groups[7].Value.Trim(), str1: " ", str2: groups[9].Value.Trim()),
+                            SenderRank = groups[10].Value.Trim(),
+                            SenderName = groups[11].Value.Trim(),
+                            Executor = groups[13].Value.Trim(),
+                            Phone = groups[14].Value.Trim(),
+                            HandedBy = groups[16].Value.Trim(),
+                            Urgency = isUrgency ? 1 : 0,
+                            Dispatcher = groups[19].Value.Trim(),
+                            Time = groups[20].Value.Trim()
+                        };
+                    }
+                    else
+                    {
+                        return null;
+                    }
+
+                }
+            }
+            catch (Exception e)
+            {
+                if (isImport) return null;
+                ShowError(e.Message);
+                return null;
+            }
+        }
+
+        private bool OpenTlgWnd(Telegram tlg = null)
         {
             bool isNew = false;
 
@@ -343,21 +431,30 @@ namespace Telegraph.ViewModels
             }
 
             TelegramWnd TelegramWindow = new TelegramWnd();
-
+            logger.Debug("Відкривається вікно телеграми...");
             if (TelegramWindow.ShowDialog() == true)
             {
                 if (isNew)
                 {
-                    _dataService.AddTelegram(ActiveTelegram, RefreshViewSource);
+                    logger.Debug("Відбувається додання нової телеграми...");
+                    dataService.AddTelegram(ActiveTelegram, RefreshViewSource);
+                    return true;
                 }
                 else
                 {
-                    _dataService.EditTelegram(ActiveTelegram.Id, ActiveTelegram, RefreshViewSource);
+                    logger.Debug(String.Format("Відбувається редагування телеграми з номером ID - {0}", ActiveTelegram.Id));
+                    dataService.EditTelegram(ActiveTelegram.Id, ActiveTelegram, RefreshViewSource);
+                    return true;
                 }
+            }
+            else
+            {
+                ActiveTelegram = null;
+                return false;
             }
         }
 
-        private void RefreshViewSource()
+        public void RefreshViewSource()
         {
             Refresh();
         }
@@ -369,6 +466,7 @@ namespace Telegraph.ViewModels
 
         private void Refresh(IEnumerable<Telegram> telegrams = null)
         {
+            logger.Debug("Оновлення списку телеграм.");
             ObservableCollection<Telegram> collection;
             TelegramsViewSource.Source = collection = new ObservableCollection<Telegram>(telegrams ?? Telegrams);
             StatusText = String.Format("Всього телеграм: {0} ", collection.Count);

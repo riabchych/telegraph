@@ -6,9 +6,9 @@ namespace Telegraph.Pages.Import
     /// <summary>
     /// Логика взаимодействия для ImportCustomFilesPage.xaml
     /// </summary>
-    public partial class SelectFiles : Page
+    public partial class SelectFilesPage : Page
     {
-        public SelectFiles()
+        public SelectFilesPage()
         {
             InitializeComponent();
         }

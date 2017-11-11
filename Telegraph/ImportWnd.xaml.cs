@@ -1,5 +1,9 @@
 ﻿using System.Windows;
 using Telegraph.ViewModels;
+using GalaSoft.MvvmLight;
+using GalaSoft.MvvmLight.Command;
+using GalaSoft.MvvmLight.Messaging;
+
 
 namespace Telegraph
 {
@@ -11,6 +15,7 @@ namespace Telegraph
         public ImportWnd()
         {
             InitializeComponent();
+            Messenger.Default.Register<ImportWnd>(this, (msg) => Activate());
         }
     }
 }

@@ -1,3 +1,4 @@
+using Microsoft.Win32;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -11,18 +12,15 @@ namespace Telegraph.ViewModels
     {
         protected struct TlgRegex
         {
-            private const string firstPartRegex = @"^ÂÈÊ[\s\.]+([À-ß¨¯²ª¥\1]+){1}[\s]+([0-9\-\:]+){1}[\s]*$[\s\-]+^ÏÐÄ[\s\.]+([À-ß¨¯²ª¥\1]+){1}";
-            private const string secondPartRegex = @"^ÏÐÄ[\s\.]+([[À-ß¨¯²ª¥\1]+)[\s]*$[\s\r\n]+^ÂÈÊ[\s\.]+([[À-ß¨¯²ª¥\1]+){1}[\s]+([0-9\-\:]+)[\s]?";
-            private const string basePartRegex = @"[À-ß¨¯²ª¥\s\d\W]+^([À-ß¨¯²ª¥\s\d]*).ÍÐ[\s\.]+([0-9]*)?[\s]?$[\s]+^([À-ß¨¯²ª¥\d\/\s]+)[\s\n\r]+^([À-ß¨¯²ª¥\w\W\s]+)^[\s]*ÍÐ[\.]?[\s]*([\d\/\s\-]+[\s]*[\d]+)[\s]+([À-ß¨¯²ª¥\s\.\-0-9]+)[\r\n]^([\d]+[\s\.\\\/]+[\d]+[\s\.\\\/]+[\d]+)[\s]+([À-ß¨¯²ª¥\s\-\1]+)$[\s]+([À-ß¨¯²ª¥\-\1]+)?[\s]+([À-ß¨¯²ª¥\s\1\.]+)$[\r\n]?[\s\-]+";
+            private const string footerRegex = @"^([ÂÈÊ\s]+[\.])*[\s]?([À-ß¨¯²ª¥\1]+){1}[\s]*([\s\d\.\-\/\:]+)?[\s]*$[\s\-]+^([ÏÐÄ\s]+[\.])*[\s]?([À-ß¨¯²ª¥\1]+){1}[\s]*([\s\d\.\-\/\:]+)?[\s]*$[\s\-]+^([ÏÐÍ\s]+[\.])*[\s]?([À-ß¨¯²ª¥\1]+)*[\s]*([\s\d\.\/\:]+)*$";
+            private const string mainRegex = @".ÍÐ[\s\.]+([0-9]*)?[À-ß¨¯²ª¥\s\d\W]+^([À-ß¨¯²ª¥\s\d]*).ÍÐ[\s\.]+([0-9]*)?[\s]?$[\s]+^([À-ß¨¯²ª¥\d\/\s\(\)]+)[\s\n\r]+^([À-ß¨¯²ª¥\w\W\s]+)^[\s]*ÍÐ[\.]?[\s]*([\d\/\s\-]+[\s]*[\d]+)[\s]+([À-ß¨¯²ª¥\s\.\-0-9]+)[\r\n]^([\d]+[\s\.\\\/]+[\d]+[\s\.\\\/]+[\d]+)[\s]+([À-ß¨¯²ª¥\s\-\1]+)$[\s]+([À-ß¨¯²ª¥\-\1]+)?[\s]+([À-ß¨¯²ª¥\s\1\.]+)$[\r\n]?[\s\-]+";
             private const string urgencyRegex = @"[\s\d]{10,}....(ÒÅÐÌ²ÍÎÂ.)";
 
-            public static string FirstPartRegex => firstPartRegex;
-            public static string SecondPartRegex => secondPartRegex;
-            public static string BasePartRegex => basePartRegex;
+            public static string FooterRegex => footerRegex;
+            public static string MainRegex => mainRegex;
             public static string UrgencyRegex => urgencyRegex;
         }
-        private Page selectFiles;
-        private Page selectImportType;
+
         private ApplicationContext db;
         private Task dbTask;
 
@@ -49,6 +47,14 @@ namespace Telegraph.ViewModels
             return res;
         }
 
+        protected bool isMSWordInstalled()
+        {
+            using (var regWord = Registry.ClassesRoot.OpenSubKey("Word.Application"))
+            {
+                return (regWord == null) ? false : true;
+            }
+        }
+
         protected bool CheckData(Telegram data) => ((data.IncNum < 1) ||
                 string.IsNullOrWhiteSpace(data.From) ||
                 string.IsNullOrWhiteSpace(data.To) ||
@@ -59,7 +65,6 @@ namespace Telegraph.ViewModels
                 string.IsNullOrWhiteSpace(data.SenderRank) ||
                 string.IsNullOrWhiteSpace(data.SenderName) ||
                 string.IsNullOrWhiteSpace(data.Executor) ||
-                string.IsNullOrWhiteSpace(data.Phone) ||
                 string.IsNullOrWhiteSpace(data.HandedBy))
             ? false : true;
 
@@ -80,12 +85,6 @@ namespace Telegraph.ViewModels
             get { return TelegramsViewSource.View; }
         }
 
-        public Page CurrentPage
-        {
-            get { return GetValue(() => CurrentPage); }
-            set { SetValue(() => CurrentPage, value); }
-        }
-
         public bool IsBusy
         {
             get { return GetValue(() => IsBusy); }
@@ -94,7 +93,5 @@ namespace Telegraph.ViewModels
 
         protected Task DbTask { get => dbTask; set => dbTask = value; }
         protected ApplicationContext Db { get => db; set => db = value; }
-        protected Page SelectFiles { get => selectFiles; set => selectFiles = value; }
-        protected Page SelectImportType { get => selectImportType; set => selectImportType = value; }
     }
 }

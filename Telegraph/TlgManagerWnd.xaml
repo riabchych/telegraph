@@ -3,12 +3,12 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity"
-        xmlns:cmd="http://www.galasoft.ch/mvvmlight"
         xmlns:local="clr-namespace:Telegraph"
         xmlns:extToolkit="http://schemas.xceed.com/wpf/xaml/toolkit"
-        mc:Ignorable="d"
+        xmlns:md="https://github.com/fantasticfiasco/mvvm-dialogs"
+        md:DialogServiceViews.IsRegistered="True"
         DataContext="{Binding App, Mode=OneWay, Source={StaticResource Locator}}"
+        mc:Ignorable="d"
         Title="Центр керування телеграмами" Height="500" Width="600" AllowDrop="True">
 
     <Window.Resources>

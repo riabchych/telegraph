@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.Practices.ServiceLocation;
+using System;
 using System.Collections.Generic;
 using System.Data.Entity;
 using System.Globalization;
@@ -6,6 +7,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Threading;
+using Telegraph.LogModule.Loggers;
 
 namespace Telegraph
 {
@@ -35,9 +37,11 @@ namespace Telegraph
     public class TelegramDataService : ITelegramDataService
     {
         private ApplicationContext Db;
+        private ILogger logger;
 
         public TelegramDataService()
         {
+            logger = ServiceLocator.Current.GetInstance<ILogger>();
             Db = new ApplicationContext();
         }
 
@@ -51,10 +55,12 @@ namespace Telegraph
                     Db.SaveChanges();
                     transaction.Commit();
                     success?.Invoke();
+                    logger.Info("Телеграма успішно додана в базу.");
                 }
                 catch (Exception ex)
                 {
                     transaction.Rollback();
+                    logger.Error("Виникла помилка при доданні телеграми в базу.");
                     fail?.Invoke(ex);
                 }
             }
@@ -90,11 +96,13 @@ namespace Telegraph
                     Db.SaveChanges();
                     transaction.Commit();
                     success?.Invoke();
+                    logger.Info("Телеграма успішно збережена.");
                 }
                 catch (Exception ex)
                 {
                     transaction.Rollback();
                     fail?.Invoke(ex);
+                    logger.Error("Виникла помилка при редагуванні телеграми.");
                 }
             }
         }
@@ -109,15 +117,18 @@ namespace Telegraph
                 {
                     try
                     {
+                        logger.Debug("Відбувається завантаження телеграм з бази.");
                         Db.Telegrams.Load();
                         Application.Current.Dispatcher.Invoke(DispatcherPriority.Normal, (Action)delegate ()
                         {
                             success?.Invoke(Db.Telegrams.Local.ToBindingList());
+                            logger.Info("Телеграми успішно завантажені.");
                         });
                     }
                     catch (Exception ex)
                     {
                         fail?.Invoke(ex);
+                        logger.Info("Виникла помилка при завантаженні телеграм.");
                     }
 
                 }).Start();
@@ -139,11 +150,13 @@ namespace Telegraph
                     Db.SaveChanges();
                     transaction.Commit();
                     success?.Invoke();
+                    logger.Info("Телеграма успішно видалена.");
                 }
                 catch (Exception ex)
                 {
                     transaction.Rollback();
                     fail?.Invoke(ex);
+                    logger.Info("Виникла помилка при видаленні телеграми.");
                 }
             }
         }

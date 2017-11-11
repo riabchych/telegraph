@@ -1,4 +1,6 @@
-﻿using System;
+﻿using GalaSoft.MvvmLight.Ioc;
+using MvvmDialogs;
+using System;
 using System.Collections.Generic;
 using System.Configuration;
 using System.Data;

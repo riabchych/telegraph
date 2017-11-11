@@ -13,6 +13,12 @@
 */
 
 using GalaSoft.MvvmLight;
+using GalaSoft.MvvmLight.Ioc;
+using Microsoft.Practices.ServiceLocation;
+using MvvmDialogs;
+using Telegraph.LogModule;
+using Telegraph.LogModule.Loggers;
+using Telegraph.LogModule.Loggers.TraceLogger;
 
 namespace Telegraph.ViewModels
 {
@@ -22,27 +28,43 @@ namespace Telegraph.ViewModels
     /// </summary>
     public class ViewModelLocator
     {
-        private ITelegramDataService _dataService;
         /// <summary>
         /// Initializes a new instance of the ViewModelLocator class.
         /// </summary>
         public ViewModelLocator()
-        {            
+        {
+            SimpleIoc.Default.Reset();
+            ServiceLocator.SetLocatorProvider(() => SimpleIoc.Default);
 
             if (ViewModelBase.IsInDesignModeStatic)
             {
-                _dataService = new TelegramDisignDataService();
+                SimpleIoc.Default.Register<ITelegramDataService>(() => new TelegramDisignDataService());
             }
             else
             {
-                _dataService = new TelegramDataService();
+                SimpleIoc.Default.Register<ITelegramDataService>(() => new TelegramDataService());
             }
-            App = new ApplicationViewModel(_dataService);
+
+            SimpleIoc.Default.Register<ILogger>(() => LoggerFactory.Create<TraceLogger>());
+            SimpleIoc.Default.Register<IDialogService>(() => new DialogService());
+            SimpleIoc.Default.Register(() => new ApplicationViewModel());
+            SimpleIoc.Default.Register(() => new ImportViewModel());
         }
 
         public ApplicationViewModel App
         {
-            get; private set;
+            get
+            {
+                return ServiceLocator.Current.GetInstance<ApplicationViewModel>();
+            }
+        }
+
+        public ImportViewModel Import
+        {
+            get
+            {
+                return ServiceLocator.Current.GetInstance<ImportViewModel>();
+            }
         }
     }
 }

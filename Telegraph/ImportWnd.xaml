@@ -3,9 +3,15 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:local="clr-namespace:Telegraph"
+        xmlns:i="clr-namespace:System.Windows.Interactivity;assembly=System.Windows.Interactivity"
+        DataContext="{Binding Import, Mode=OneWay, Source={StaticResource Locator}}"
         mc:Ignorable="d"
-        Title="Імпортування" Height="370" Width="500" ResizeMode="CanMinimize">
+    Title="Імпортування" Height="370" Width="500" ResizeMode="CanMinimize">
+    <i:Interaction.Triggers>
+        <i:EventTrigger EventName="Closing" >
+            <i:InvokeCommandAction Command="{Binding OnClose}" />
+        </i:EventTrigger>
+    </i:Interaction.Triggers>
     <Grid>
         <Frame Content="{Binding CurrentPage, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}" NavigationUIVisibility="Hidden" />
     </Grid>
