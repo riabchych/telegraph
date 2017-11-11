@@ -422,11 +422,11 @@ namespace Telegraph.ViewModels
         {
             bool isNew = false;
 
-            tlg = tlg ?? (tlg = new Telegram());
+            ActiveTelegram = tlg ?? (tlg = new Telegram());
 
-            if (tlg.Id < 1)
+            if (ActiveTelegram.Id < 1)
             {
-                tlg.Time = DateTime.Now.ToString(new CultureInfo("ru-RU"));
+                ActiveTelegram.Time = DateTime.Now.ToString(new CultureInfo("ru-RU"));
                 isNew = true;
             }
 
