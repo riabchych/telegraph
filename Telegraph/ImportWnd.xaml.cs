@@ -15,7 +15,7 @@ namespace Telegraph
         public ImportWnd()
         {
             InitializeComponent();
-            Messenger.Default.Register<ImportWnd>(this, (msg) => Activate());
+            Messenger.Default.Register<ImportWnd>(this, (msg) => Dispatcher.Invoke(() => Activate()));
         }
     }
 }
