@@ -1,43 +1,17 @@
 ﻿using Microsoft.Practices.ServiceLocation;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Data.Entity;
 using System.Globalization;
-using System.Threading;
-using System.Threading.Tasks;
-using System.Windows;
-using System.Windows.Threading;
 using Telegraph.LogModule.Loggers;
 
 namespace Telegraph
 {
-    public interface ITelegramDataService
-    {
-        void LoadTelegrams(
-            Action<IEnumerable<Telegram>> success = null,
-            Action<Exception> fail = null);
-
-        void AddTelegram(
-            Telegram tlg,
-            Action success = null,
-            Action<Exception> fail = null);
-
-        void EditTelegram(
-            int id,
-            Telegram tlg,
-            Action success = null,
-            Action<Exception> fail = null);
-
-        void RemoveTelegram(
-            Telegram tlg,
-            Action success = null,
-            Action<Exception> fail = null);
-    }
-
     public class TelegramDataService : ITelegramDataService
     {
-        private ApplicationContext Db;
-        private ILogger logger;
+        private readonly ApplicationContext Db;
+        private readonly ILogger logger;
 
         public TelegramDataService()
         {
@@ -45,7 +19,7 @@ namespace Telegraph
             Db = new ApplicationContext();
         }
 
-        public void AddTelegram(Telegram tlg, Action success = null, Action<Exception> fail = null)
+        public bool AddTelegram(Telegram tlg)
         {
             using (var transaction = Db.Database.BeginTransaction())
             {
@@ -54,21 +28,21 @@ namespace Telegraph
                     Db.Telegrams.Add(tlg);
                     Db.SaveChanges();
                     transaction.Commit();
-                    success?.Invoke();
                     logger.Info("Телеграма успішно додана в базу.");
+                    return true;
                 }
                 catch (Exception ex)
                 {
                     transaction.Rollback();
-                    logger.Error("Виникла помилка при доданні телеграми в базу.");
-                    fail?.Invoke(ex);
+                    logger.Debug("Виникла помилка при доданні телеграми в базу.");
+                    logger.Error(ex.Message);
+                    return false;
                 }
             }
         }
 
-        public void EditTelegram(int id, Telegram tlg, Action success = null, Action<Exception> fail = null)
+        public bool EditTelegram(int id, Telegram tlg)
         {
-
             using (var transaction = Db.Database.BeginTransaction())
             {
                 try
@@ -95,68 +69,57 @@ namespace Telegraph
                     Db.Entry(t).State = EntityState.Modified;
                     Db.SaveChanges();
                     transaction.Commit();
-                    success?.Invoke();
                     logger.Info("Телеграма успішно збережена.");
+                    return true;
                 }
                 catch (Exception ex)
                 {
                     transaction.Rollback();
-                    fail?.Invoke(ex);
-                    logger.Error("Виникла помилка при редагуванні телеграми.");
+                    logger.Info("Виникла помилка при редагуванні телеграми.");
+                    logger.Error(ex.Message);
+                    return false;
                 }
             }
         }
 
-        public void LoadTelegrams(
-            Action<IEnumerable<Telegram>> success,
-            Action<Exception> fail)
+        public BindingList<Telegram> LoadTelegrams()
         {
             try
             {
-                new Task(() =>
-                {
-                    try
-                    {
-                        logger.Debug("Відбувається завантаження телеграм з бази.");
-                        Db.Telegrams.Load();
-                        Application.Current.Dispatcher.Invoke(DispatcherPriority.Normal, (Action)delegate ()
-                        {
-                            success?.Invoke(Db.Telegrams.Local.ToBindingList());
-                            logger.Info("Телеграми успішно завантажені.");
-                        });
-                    }
-                    catch (Exception ex)
-                    {
-                        fail?.Invoke(ex);
-                        logger.Info("Виникла помилка при завантаженні телеграм.");
-                    }
-
-                }).Start();
+                logger.Debug("Відбувається завантаження телеграм з бази.");
+                Db.Telegrams.Load();
+                logger.Info("Телеграми успішно завантажені.");
+                return Db.Telegrams.Local.ToBindingList();
             }
-            catch (Exception e)
+            catch (Exception ex)
             {
-                fail?.Invoke(e);
+                logger.Info("Виникла помилка при завантаженні телеграм.");
+                logger.Error(ex.Message);
+                return null;
             }
         }
 
-        public void RemoveTelegram(Telegram tlg, Action success = null, Action<Exception> fail = null)
+        public bool RemoveTelegram(object tlg)
         {
-
             using (var transaction = Db.Database.BeginTransaction())
             {
                 try
                 {
-                    Db.Telegrams.Remove(tlg);
+                    foreach (Telegram t in tlg as IList<Telegram>)
+                    {
+                        Db.Telegrams.Remove(t);
+                    }
                     Db.SaveChanges();
                     transaction.Commit();
-                    success?.Invoke();
-                    logger.Info("Телеграма успішно видалена.");
+                    logger.Info("Телеграми успішно видалені.");
+                    return true;
                 }
                 catch (Exception ex)
                 {
                     transaction.Rollback();
-                    fail?.Invoke(ex);
                     logger.Info("Виникла помилка при видаленні телеграми.");
+                    logger.Error(ex.Message);
+                    return false;
                 }
             }
         }
@@ -164,32 +127,22 @@ namespace Telegraph
 
     public class TelegramDisignDataService : ITelegramDataService
     {
-        private ApplicationContext Db;
-
-
-        public TelegramDisignDataService()
-        {
-            Db = new ApplicationContext();
-        }
-
-        public void AddTelegram(Telegram tlg, Action success = null, Action<Exception> fail = null)
+        public bool AddTelegram(Telegram tlg)
         {
             throw new NotImplementedException();
         }
 
-        public void EditTelegram(int id, Telegram tlg, Action success = null, Action<Exception> fail = null)
+        public bool EditTelegram(int id, Telegram tlg)
         {
             throw new NotImplementedException();
         }
 
-        public void LoadTelegrams(
-            Action<IEnumerable<Telegram>> success,
-            Action<Exception> fail)
+        public BindingList<Telegram> LoadTelegrams()
         {
-            success?.Invoke(CreateDisignTelegrams());
+            throw new NotImplementedException();
         }
 
-        public void RemoveTelegram(Telegram tlg, Action  success = null, Action<Exception> fail = null)
+        public bool RemoveTelegram(object tlg)
         {
             throw new NotImplementedException();
         }
