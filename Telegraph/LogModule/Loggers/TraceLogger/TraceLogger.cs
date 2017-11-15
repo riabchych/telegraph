@@ -135,12 +135,11 @@ namespace Telegraph.LogModule.Loggers.TraceLogger
                 }
             }
 
-            StreamWriter sw = System.IO.File.AppendText(filename);
+            StreamWriter sw = File.AppendText(filename);
 
             try
             {
-                string logLine = System.String.Format(
-                    "{0:G}: {1}.", System.DateTime.Now, msg);
+                string logLine = System.String.Format("{0:G}: {1}.", System.DateTime.Now, msg);
                 sw.WriteLine(logLine);
             }
             finally

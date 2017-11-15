@@ -11,7 +11,7 @@
     d:DesignHeight="300" d:DesignWidth="300">
 
     <Grid>
-        <ListView x:Name="telegramsList" ItemsSource="{Binding TelegramsViewSource.View}" VerticalContentAlignment="Center" BorderBrush="Khaki" SelectedItem="{Binding ActiveTelegram, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}">
+        <ListView x:Name="telegramsList" SelectionMode="Extended"  ItemsSource="{Binding TelegramsViewSource.View}" VerticalContentAlignment="Center" BorderBrush="Khaki">
 
             <ListView.Resources>
                 <Style TargetType="{x:Type GridViewColumnHeader}">
@@ -25,6 +25,9 @@
                 </i:EventTrigger>
                 <i:EventTrigger EventName="MouseDoubleClick">
                     <Custom:EventToCommand Command="{Binding EditCommand}" CommandParameter="{Binding SelectedItem, ElementName=telegramsList}" />
+                </i:EventTrigger>
+                <i:EventTrigger EventName="SelectionChanged">
+                    <Custom:EventToCommand Command="{Binding SelectedTelegramsChanged}" CommandParameter="{Binding SelectedItems, ElementName=telegramsList}" />
                 </i:EventTrigger>
             </i:Interaction.Triggers>
 

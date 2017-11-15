@@ -24,7 +24,7 @@
             <Button Command="{Binding Import.StartImportCommand, Source={StaticResource Locator}}" IsEnabled="{Binding Import.Filenames.Count, Source={StaticResource Locator}}" Width="75" Margin="5,0,0,0">Імпорт</Button>
             <Button Command="{Binding Import.CancelImportCommand, Source={StaticResource Locator}}" Width="75" Margin="5,0,0,0">Скасувати</Button>
         </StackPanel>
-        <ListBox Margin="10,10,10,5" ItemsSource="{Binding Import.Filenames, Source={StaticResource Locator}, Mode=TwoWay}"/>
+        <ListBox Margin="10,10,10,5" ItemsSource="{Binding Filenames}"/>
 
         <extToolkit:BusyIndicator IsBusy="{Binding Import.IsBusy, Source={StaticResource Locator}}" DisplayAfter="0" Grid.RowSpan="2">
             <extToolkit:BusyIndicator.BusyContentTemplate>
