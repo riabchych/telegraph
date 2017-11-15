@@ -2,14 +2,12 @@ using Microsoft.Practices.ServiceLocation;
 using MvvmDialogs;
 using MvvmDialogs.FrameworkDialogs.OpenFile;
 using System;
-using System.Collections.Generic;
-using System.ComponentModel;
+using System.Collections.ObjectModel;
 using System.IO;
 using System.Reflection;
-using System.Threading;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Threading;
 
 namespace Telegraph.ViewModels
 {
@@ -29,14 +27,27 @@ namespace Telegraph.ViewModels
         private RelayCommand onClose;
         private readonly IDialogService dialogService;
         private readonly ApplicationViewModel applicationViewModel;
-        private ManualResetEvent _busy;
-        private BackgroundWorker importBackgroundWorker;
-
 
         public ImportViewModel()
         {
             dialogService = ServiceLocator.Current.GetInstance<IDialogService>();
             applicationViewModel = ServiceLocator.Current.GetInstance<ApplicationViewModel>();
+        }
+
+        private ObservableCollection<string> Import(IProgress<int> progress)
+        {
+            ObservableCollection<string> failureList = new ObservableCollection<string>();
+
+            for (int i = 0; i < Filenames.Count; i++)
+            {
+                progress.Report(i + 1);
+
+                if (!applicationViewModel.ImportTelegrams(Filenames[i]))
+                {
+                    failureList.Add(Filenames[i]);
+                }
+            }
+            return failureList;
         }
 
         public RelayCommand ImportFromFilesCommand
@@ -60,23 +71,18 @@ namespace Telegraph.ViewModels
         public RelayCommand StartImportCommand
         {
             get => startImportCommand ??
-                (startImportCommand = new RelayCommand((o) =>
+                (startImportCommand = new RelayCommand(async (o) =>
                 {
-                    if (Filenames == null || Filenames.Count <= 0)
+                    if (Filenames == null || (ProgressMaximum = Filenames.Count + 1) <= 1)
                     {
                         return;
                     }
-
-                    ImportBackgroundWorker = new BackgroundWorker();
-                    _busy = new ManualResetEvent(false);
-                    ImportBackgroundWorker.DoWork += Import_DoWork;
-                    ImportBackgroundWorker.ProgressChanged += ImportDoWork_ProgressChanged;
-                    ImportBackgroundWorker.RunWorkerCompleted += ImportDoWork_Completed;
-                    ImportBackgroundWorker.WorkerSupportsCancellation = true;
-                    ImportBackgroundWorker.WorkerReportsProgress = true;
-                    ImportBackgroundWorker.RunWorkerAsync();
-                    
-                    _busy.Set();
+                    IsBusy = true;
+                    Progress<int> progress = new Progress<int>(current => ProgressText = $"Імпортується телеграма {ProgressValue = current}/{ProgressMaximum}...");
+                    Filenames = await Task.Factory.StartNew(() => Import(progress), TaskCreationOptions.LongRunning);
+                    IsBusy = false;
+                    dialogService.ShowMessageBox(this, Filenames.Count > 0 ? "Імпортування закінчено! Деякі телеграми імпортувати не вдалося."
+                        : "Телеграми успішно імпортовані!", "Імпортування закінчено", MessageBoxButton.OK, MessageBoxImage.Information);
                 }));
         }
 
@@ -85,15 +91,6 @@ namespace Telegraph.ViewModels
             get => pauseImportCommand ??
                 (pauseImportCommand = new RelayCommand((o) =>
                 {
-                    if (!_busy.WaitOne(0))
-                    {
-                        _busy.Set();
-                    }
-                    else
-                    {
-                        _busy.Reset();
-                    }
-
                 }));
         }
 
@@ -102,13 +99,6 @@ namespace Telegraph.ViewModels
             get => stopImportCommand ??
                 (stopImportCommand = new RelayCommand((o) =>
                 {
-                    _busy.Set();
-                    if (ImportBackgroundWorker.IsBusy)
-                    {
-                        ImportBackgroundWorker.CancelAsync();
-                        ImportBackgroundWorker.Dispose();
-                        _busy.Dispose();
-                    }
                 }));
         }
 
@@ -135,7 +125,7 @@ namespace Telegraph.ViewModels
             get => chooseFilesCommand ??
                 (chooseFilesCommand = new RelayCommand((o) =>
                 {
-                    var settings = new OpenFileDialogSettings
+                    OpenFileDialogSettings settings = new OpenFileDialogSettings
                     {
                         Title = "Обрання файлів",
                         Multiselect = true,
@@ -145,7 +135,7 @@ namespace Telegraph.ViewModels
 
                     if (dialogService.ShowOpenFileDialog(this, settings) == true)
                     {
-                        Filenames = new List<string>(settings.FileNames);
+                        Filenames = new ObservableCollection<string>(settings.FileNames);
                     }
                 }));
         }
@@ -155,64 +145,11 @@ namespace Telegraph.ViewModels
             get => onClose ??
                 (onClose = new RelayCommand((o) =>
                 {
-                    _busy.Set();
-                    if (ImportBackgroundWorker == null)
-                    {
-                        return;
-                    }
-                    else if (ImportBackgroundWorker.IsBusy)
-                    {
-                        ImportBackgroundWorker.CancelAsync();
-                    }
-                    ImportBackgroundWorker.Dispose();
-                    _busy.Dispose();
+                    applicationViewModel.RefreshViewSource();
                 }));
         }
 
-        private void ImportDoWork_Completed(object sender, RunWorkerCompletedEventArgs e)
-        {
-            IsBusy = false;
-            applicationViewModel.RefreshViewSource();
-            dialogService.ShowMessageBox(this, Filenames.Count > 0 ? "Імпортування закінчено! Деякі телеграми імпортувати не вдалося."
-                : "Телеграми успішно імпортовані!", "Імпортування закінчено", MessageBoxButton.OK, MessageBoxImage.Information);
-            ImportBackgroundWorker.CancelAsync();
-        }
-
-        private void ImportDoWork_ProgressChanged(object sender, ProgressChangedEventArgs e)
-        {
-            ProgressValue = e.ProgressPercentage;
-            ProgressText = string.Format("Імпортується телеграма {0}/{1}...", e.ProgressPercentage, ProgressMaximum);
-        }
-
-        private void Import_DoWork(object sender, DoWorkEventArgs e)
-        {
-            IsBusy = true;
-            int i = 0;
-            ProgressMaximum = Filenames.Count;
-            string[] files = new string[Filenames.Count];
-            Filenames.CopyTo(files);
-
-            foreach (string filename in files)
-            {
-                _busy.WaitOne();
-                ImportBackgroundWorker.ReportProgress(percentProgress: i++);
-
-                if (ImportBackgroundWorker.CancellationPending)
-                {
-                    break;
-                }
-
-                Application.Current.Dispatcher.Invoke(priority: DispatcherPriority.Normal, method: (Action)delegate ()
-                {
-                    if (applicationViewModel.ImportTelegrams(filename))
-                    {
-                        Filenames.RemoveAt(Filenames.IndexOf(filename));
-                    }
-                });
-            }
-        }
-
-        public List<string> Filenames
+        public ObservableCollection<string> Filenames
         {
             get { return GetValue(() => Filenames); }
             set { SetValue(() => Filenames, value); }
@@ -250,6 +187,5 @@ namespace Telegraph.ViewModels
 
         public Page SelectFilesPage { get => selectFilesPage; set => selectFilesPage = value; }
         public Page SelectImportTypePage { get => selectImportTypePage; set => selectImportTypePage = value; }
-        public BackgroundWorker ImportBackgroundWorker { get => importBackgroundWorker; set => importBackgroundWorker = value; }
     }
 }
