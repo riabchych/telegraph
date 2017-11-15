@@ -17,7 +17,7 @@
         </Style>
     </Window.Resources>
 
-    <extToolkit:BusyIndicator BusyContent="Завантаження, будь ласка, зачекайте..." IsBusy="{Binding IsBusy}">
+    <extToolkit:BusyIndicator BusyContent="{Binding StatusText}" IsBusy="{Binding IsBusy}">
         <Grid>
             <Grid.RowDefinitions>
                 <RowDefinition Height="20" />
@@ -36,13 +36,21 @@
                     <MenuItem Header="Вихід"/>
                 </MenuItem>
                 <MenuItem Header="Редагування">
-
+                    <MenuItem Header="Внести зміни" Command="{Binding EditCommand}" IsEnabled="{Binding IsSelected, Mode=OneWay}"/>
+                    <MenuItem Header="Вирізати" Command="{Binding CutCommand}" IsEnabled="{Binding SelectedTelegrams.Count, Mode=OneWay}"/>
+                    <MenuItem Header="Копіювати" Command="{Binding CopyCommand}" IsEnabled="{Binding SelectedTelegrams.Count, Mode=OneWay}"/>
+                    <MenuItem Header="Видалити" Command="{Binding DeleteCommand}" IsEnabled="{Binding SelectedTelegrams.Count, Mode=OneWay}"/>
+                    <MenuItem Header="Вставити" />
                 </MenuItem>
                 <MenuItem Header="Сервіс">
-
+                    <MenuItem Header="Обслуговування"/>
+                    <MenuItem Header="Архівація та відновлення"/>
+                    <Separator/>
+                    <MenuItem Header="Налаштування"/>
                 </MenuItem>
                 <MenuItem Header="Допомога">
-
+                    <MenuItem Header="Переглянути довідку"/>
+                    <MenuItem Header="Про програму"/>
                 </MenuItem>
             </Menu>
             <ToolBarTray Grid.Row="1" ScrollViewer.VerticalScrollBarVisibility="Disabled" Grid.IsSharedSizeScope="True" VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
@@ -55,21 +63,21 @@
                     </Button>
 
                     <Separator/>
-                    <Button ToolTip="Редагувати" Command="{Binding EditCommand}" VerticalAlignment="Stretch" Margin="0,0,5,-3" >
+                    <Button ToolTip="Редагувати" Command="{Binding EditCommand}" VerticalAlignment="Stretch" Margin="0,0,5,-3" IsEnabled="{Binding IsSelected, Mode=OneWay}" >
                         <Image Source="Icons/page_white_edit.png"/>
                     </Button>
 
-                    <Button ToolTip="Видалити" Command="{Binding DeleteCommand}" VerticalAlignment="Stretch" Margin="0,0,5,-3">
+                    <Button ToolTip="Видалити" Command="{Binding DeleteCommand}" VerticalAlignment="Stretch" Margin="0,0,5,-3" IsEnabled="{Binding SelectedTelegrams.Count, Mode=OneWay}">
                         <Image Source="Icons/page_white_delete.png"></Image>
                     </Button>
 
                     <Separator/>
 
-                    <Button ToolTip="Відкрити в  Word" Command="{Binding SendToWord}" VerticalAlignment="Stretch" Margin="0,0,5,-3">
+                    <Button ToolTip="Відкрити в  Word" Command="{Binding SendToWord}" VerticalAlignment="Stretch" Margin="0,0,5,-3" IsEnabled="{Binding IsSelected, Mode=OneWay}">
                         <Image Source="Icons/page_white_word.png"></Image>
                     </Button>
 
-                    <Button ToolTip="Друк" Command="{Binding PrintCommand}" VerticalAlignment="Stretch" Margin="0,0,5,-3">
+                    <Button ToolTip="Друк" Command="{Binding PrintCommand}" VerticalAlignment="Stretch" Margin="0,0,5,-3" IsEnabled="{Binding IsSelected, Mode=OneWay}">
                         <Image Source="Icons/printer.png"></Image>
                     </Button>
 
@@ -106,7 +114,7 @@
                     </Grid>
                 </ToolBar>
             </ToolBarTray>
-            <local:TelegramListControl Grid.Row="2"></local:TelegramListControl>
+            <local:TelegramListControl x:Name="tlgList" Grid.Row="2"></local:TelegramListControl>
             <StatusBar Grid.Row="3">
                 <StatusBar.ItemsPanel>
                     <ItemsPanelTemplate>
