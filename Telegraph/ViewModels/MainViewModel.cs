@@ -1,7 +1,9 @@
 using Microsoft.Win32;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Controls;
 using System.Windows.Data;
@@ -89,6 +91,11 @@ namespace Telegraph.ViewModels
         {
             get { return GetValue(() => IsBusy); }
             set { SetValue(() => IsBusy, value); }
+        }
+
+        protected IList<t> ConvertListOfSelectedItem<t>(object param)
+        {
+            return (param as IList).Cast<t>().ToList();
         }
 
         protected Task DbTask { get => dbTask; set => dbTask = value; }
