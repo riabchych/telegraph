@@ -3,7 +3,6 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data.Entity;
-using System.Globalization;
 using Telegraph.LogModule.Loggers;
 
 namespace Telegraph
@@ -101,7 +100,7 @@ namespace Telegraph
 
         public bool RemoveTelegram(object tlg)
         {
-            using (var transaction = Db.Database.BeginTransaction())
+            using (DbContextTransaction transaction = Db.Database.BeginTransaction())
             {
                 try
                 {
@@ -122,62 +121,6 @@ namespace Telegraph
                     return false;
                 }
             }
-        }
-    }
-
-    public class TelegramDisignDataService : ITelegramDataService
-    {
-        public bool AddTelegram(Telegram tlg)
-        {
-            throw new NotImplementedException();
-        }
-
-        public bool EditTelegram(int id, Telegram tlg)
-        {
-            throw new NotImplementedException();
-        }
-
-        public BindingList<Telegram> LoadTelegrams()
-        {
-            throw new NotImplementedException();
-        }
-
-        public bool RemoveTelegram(object tlg)
-        {
-            throw new NotImplementedException();
-        }
-
-        private IEnumerable<Telegram> CreateDisignTelegrams()
-        {
-            var telegrams = new List<Telegram>();
-            var tlgCounter = 1;
-            var culture = new CultureInfo("ru-RU");
-            DateTime localDate = DateTime.Now;
-            var n = new Random(100);
-            while (tlgCounter <= 10)
-            {
-                var tlg = new Telegram()
-                {
-                    SelfNum = tlgCounter++,
-                    IncNum = n.Next(100, 200),
-                    From = "1З КИЕВА   П1ВН1ЧНЕ КИЇВСЬКЕ ТЕРИТОРІАЛЬНЕ УПРАВЛІННЯ",
-                    To = "КОМАНДИРОВІ  В/Ч 306" + n.Next(1, 100),
-                    Text = " НА ВАШ ВИХІДНИЙ ВІД 31.09.2017 № 1/9-1072" + tlgCounter,
-                    SubNum = tlgCounter.ToString(),
-                    Date = localDate.ToString(culture),
-                    SenderPos = "НАЧАЛЬНИК ПІВНІЧНОГО КИЇВСЬКОГО ТЕРИТОРІАЛЬНОГО УПРАВЛІННЯ НГ УКРАЇНИ",
-                    SenderRank = "ПОЛКОВНИК",
-                    SenderName = "Ю.А. МАКАРЧУК",
-                    Executor = "ШИРМАНОВ",
-                    Phone = "30-17",
-                    HandedBy = "ТАРАСЮК",
-                    Urgency = n.Next(0, 1),
-                    Dispatcher = "РЯБЧИЧ",
-                    Time = localDate.ToString(culture)
-                };
-                telegrams.Add(tlg);
-            }
-            return telegrams;
         }
     }
 }

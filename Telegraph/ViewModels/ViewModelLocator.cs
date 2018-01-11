@@ -37,7 +37,7 @@ namespace Telegraph.ViewModels
 
             if (ViewModelBase.IsInDesignModeStatic)
             {
-                SimpleIoc.Default.Register<ITelegramDataService>(() => new TelegramDisignDataService());
+                // SimpleIoc.Default.Register<ITelegramDataService>(() => new TelegramDisignDataService());
             }
             else
             {

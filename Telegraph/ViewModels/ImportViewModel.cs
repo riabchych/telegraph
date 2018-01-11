@@ -3,15 +3,16 @@ using MvvmDialogs;
 using MvvmDialogs.FrameworkDialogs.OpenFile;
 using System;
 using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.IO;
 using System.Reflection;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 
 namespace Telegraph.ViewModels
 {
-
     public class ImportViewModel : MainViewModel
     {
         private Page selectFilesPage;
@@ -19,12 +20,12 @@ namespace Telegraph.ViewModels
         private RelayCommand importFromFilesCommand;
         private RelayCommand importFromBackupCommand;
         private RelayCommand startImportCommand;
-        private RelayCommand pauseImportCommand;
-        private RelayCommand stopImportCommand;
-        private RelayCommand cancelImportCommand;
+        private RelayCommand abortImportCommand;
+        private RelayCommand closeWindowCommand;
         private RelayCommand goToBackCommand;
         private RelayCommand chooseFilesCommand;
         private RelayCommand onClose;
+        private CancellationTokenSource cancellationToken;
         private readonly IDialogService dialogService;
         private readonly ApplicationViewModel applicationViewModel;
 
@@ -34,12 +35,21 @@ namespace Telegraph.ViewModels
             applicationViewModel = ServiceLocator.Current.GetInstance<ApplicationViewModel>();
         }
 
-        private ObservableCollection<string> Import(IProgress<int> progress)
+        private void clear()
+        {
+            IsBusy = false;
+            Filenames.Clear();
+            cancellationToken.Dispose();
+            cancellationToken = null;
+        }
+
+        private ObservableCollection<string> Import(IProgress<int> progress, CancellationToken token = default(CancellationToken))
         {
             ObservableCollection<string> failureList = new ObservableCollection<string>();
 
             for (int i = 0; i < Filenames.Count; i++)
             {
+                token.ThrowIfCancellationRequested();
                 progress.Report(i + 1);
 
                 if (!applicationViewModel.ImportTelegrams(Filenames[i]))
@@ -53,19 +63,13 @@ namespace Telegraph.ViewModels
         public RelayCommand ImportFromFilesCommand
         {
             get => importFromFilesCommand ??
-                (importFromFilesCommand = new RelayCommand((o) =>
-                {
-                    CurrentPage = SelectFilesPage = new Pages.Import.SelectFilesPage();
-                }));
+                (importFromFilesCommand = new RelayCommand((o) => CurrentPage = SelectFilesPage = new Pages.Import.SelectFilesPage()));
         }
 
         public RelayCommand ImportFromBackupCommand
         {
             get => importFromBackupCommand ??
-                (importFromBackupCommand = new RelayCommand((o) =>
-                {
-                    CurrentPage = SelectFilesPage = new Pages.Import.SelectFilesPage();
-                }));
+                (importFromBackupCommand = new RelayCommand((o) => CurrentPage = SelectFilesPage = new Pages.Import.SelectFilesPage()));
         }
 
         public RelayCommand StartImportCommand
@@ -73,51 +77,54 @@ namespace Telegraph.ViewModels
             get => startImportCommand ??
                 (startImportCommand = new RelayCommand(async (o) =>
                 {
-                    if (Filenames == null || (ProgressMaximum = Filenames.Count + 1) <= 1)
-                    {
+                    if (IsBusy || Filenames == null || (ProgressMaximum = Filenames.Count) <= 0)
                         return;
-                    }
+
                     IsBusy = true;
+                    cancellationToken = new CancellationTokenSource();
                     Progress<int> progress = new Progress<int>(current => ProgressText = $"Імпортується телеграма {ProgressValue = current}/{ProgressMaximum}...");
-                    Filenames = await Task.Factory.StartNew(() => Import(progress), TaskCreationOptions.LongRunning);
-                    IsBusy = false;
-                    dialogService.ShowMessageBox(this, Filenames.Count > 0 ? "Імпортування закінчено! Деякі телеграми імпортувати не вдалося."
-                        : "Телеграми успішно імпортовані!", "Імпортування закінчено", MessageBoxButton.OK, MessageBoxImage.Information);
+                    try
+                    {
+                        Filenames = await Task.Factory.StartNew(() => Import(progress, cancellationToken.Token), TaskCreationOptions.LongRunning);
+                        dialogService.ShowMessageBox(this, Filenames.Count > 0 ? "Імпортування закінчено! Деякі телеграми імпортувати не вдалося."
+                            : "Телеграми успішно імпортовані!", "Імпортування закінчено", MessageBoxButton.OK, MessageBoxImage.Information);
+                    }
+                    catch (OperationCanceledException)
+                    {
+                        dialogService.ShowMessageBox(this, "Імпортування скасовано користувачем!", "Імпортування скасовано",
+                            MessageBoxButton.OK, MessageBoxImage.Information);
+                    }
+                    finally
+                    {
+                        clear();
+                    }
                 }));
         }
 
-        public RelayCommand PauseImportCommand
+        public RelayCommand AbortImportCommand
         {
-            get => pauseImportCommand ??
-                (pauseImportCommand = new RelayCommand((o) =>
+            get => abortImportCommand ??
+                (abortImportCommand = new RelayCommand((o) =>
                 {
+                    if(cancellationToken != null)
+                        cancellationToken.Cancel();
                 }));
         }
 
-        public RelayCommand StopImportCommand
+        public RelayCommand CloseWindowCommand
         {
-            get => stopImportCommand ??
-                (stopImportCommand = new RelayCommand((o) =>
+            get => closeWindowCommand ??
+                (closeWindowCommand = new RelayCommand((o) =>
                 {
-                }));
-        }
-
-        public RelayCommand CancelImportCommand
-        {
-            get => cancelImportCommand ??
-                (cancelImportCommand = new RelayCommand((o) =>
-                {
-                    applicationViewModel.ImportWnd.DialogResult = false;
+                    if (!IsBusy)
+                        applicationViewModel.ImportWnd.DialogResult = false;
                 }));
         }
 
         public RelayCommand GoToBackCommand
         {
             get => goToBackCommand ??
-                (goToBackCommand = new RelayCommand((o) =>
-                {
-                    CurrentPage = SelectImportTypePage;
-                }));
+                (goToBackCommand = new RelayCommand((o) => CurrentPage = SelectImportTypePage));
         }
 
         public RelayCommand ChooseFilesCommand
@@ -125,6 +132,9 @@ namespace Telegraph.ViewModels
             get => chooseFilesCommand ??
                 (chooseFilesCommand = new RelayCommand((o) =>
                 {
+                    if (IsBusy)
+                        return;
+
                     OpenFileDialogSettings settings = new OpenFileDialogSettings
                     {
                         Title = "Обрання файлів",
@@ -145,7 +155,14 @@ namespace Telegraph.ViewModels
             get => onClose ??
                 (onClose = new RelayCommand((o) =>
                 {
-                    applicationViewModel.RefreshViewSource();
+                    if (o is CancelEventArgs e && IsBusy)
+                    {
+                        e.Cancel = true;
+                    }
+                    else
+                    {
+                        applicationViewModel.RefreshViewSource();
+                    }
                 }));
         }
 

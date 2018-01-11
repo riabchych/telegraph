@@ -10,20 +10,24 @@
 
     <Window.Resources>
         <local:UrgencyConverter x:Key="urgencyConverterKey" />
-
-        <Style TargetType="{x:Type TextBlock}">
-            <Setter Property="Margin" Value="8" />
-        </Style>
         <Style TargetType="{x:Type TextBox}">
+            <Setter Property="CharacterCasing" Value="Upper"/>
+            <Setter Property="FontFamily" Value="Courier New" />
+            <Setter Property="Margin" Value="8" />
+            <Setter Property="CharacterCasing" Value="Upper"/>
+            <Setter Property="MaxLines" Value="1"/>
             <Style.Triggers>
                 <Trigger Property="Validation.HasError" Value="True">
-                    <Setter Property="ToolTip" Value="{Binding RelativeSource={RelativeSource Self},
-                    Path=(Validation.Errors)[0].ErrorContent}" />
+                    <Setter Property="ToolTip" Value="{Binding RelativeSource={RelativeSource Self}, Path=(Validation.Errors)[0].ErrorContent}" />
                     <Setter Property="Foreground" Value="Red" />
                 </Trigger>
             </Style.Triggers>
+        </Style>
+        
+        <Style TargetType="{x:Type TextBlock}">
             <Setter Property="Margin" Value="8" />
         </Style>
+        
     </Window.Resources>
     <Grid>
         <Grid.RowDefinitions>
@@ -57,10 +61,10 @@
                     <RadioButton Grid.Column="1" Margin="10,10,0,8" GroupName="UrgencyGroup" Content="Проста" IsChecked="{Binding ActiveTelegram.Urgency, ConverterParameter=0, Converter={StaticResource urgencyConverterKey}}"  HorizontalAlignment="Left" Width="70" />
                     <RadioButton Grid.Column="1" Margin="85,10,0,8" GroupName="UrgencyGroup" Content="Термінова" IsChecked="{Binding ActiveTelegram.Urgency, ConverterParameter=1, Converter={StaticResource urgencyConverterKey}}" HorizontalAlignment="Left" Width="80" IsEnabled="False" />
 
-                    <TextBox Text="{Binding ActiveTelegram.SelfNum, Mode=TwoWay, UpdateSourceTrigger=LostFocus, ValidatesOnDataErrors=True, NotifyOnValidationError=True}" Grid.Column="1" Grid.Row="1" CharacterCasing="Upper" FontFamily="Courier New" MaxLines="1"/>
-                    <TextBox Text="{Binding ActiveTelegram.Text, Mode=TwoWay, UpdateSourceTrigger=LostFocus, ValidatesOnDataErrors=True,NotifyOnValidationError=True}" Grid.Column="1" Grid.Row="2" CharacterCasing="Upper" FontFamily="Courier New" TextWrapping="Wrap" VerticalScrollBarVisibility="Auto" TextAlignment="Justify" AcceptsTab="True" AcceptsReturn="True" />
-                    <TextBox Text="{Binding ActiveTelegram.SubNum, Mode=TwoWay, UpdateSourceTrigger=LostFocus, ValidatesOnDataErrors=True,NotifyOnValidationError=True}" Grid.Column="1" Grid.Row="3" CharacterCasing="Upper" FontFamily="Courier New" MaxLines="1" />
-                    <TextBox Text="{Binding ActiveTelegram.Date, Mode=TwoWay, UpdateSourceTrigger=LostFocus, ValidatesOnDataErrors=True,NotifyOnValidationError=True}" Grid.Column="1" Grid.Row="4" CharacterCasing="Upper" FontFamily="Courier New" MaxLines="1" />
+                    <TextBox Text="{Binding ActiveTelegram.SelfNum, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, ValidatesOnDataErrors=True, NotifyOnValidationError=True}" Grid.Column="1" Grid.Row="1" />
+                    <TextBox Text="{Binding ActiveTelegram.Text, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, ValidatesOnDataErrors=True,NotifyOnValidationError=True}" Grid.Column="1" Grid.Row="2" TextWrapping="Wrap" VerticalScrollBarVisibility="Auto" TextAlignment="Justify" AcceptsTab="True" AcceptsReturn="True" MaxLines="9999" />
+                    <TextBox Text="{Binding ActiveTelegram.SubNum, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, ValidatesOnDataErrors=True,NotifyOnValidationError=True}" Grid.Column="1" Grid.Row="3"  />
+                    <TextBox Text="{Binding ActiveTelegram.Date, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, ValidatesOnDataErrors=True,NotifyOnValidationError=True}" Grid.Column="1" Grid.Row="4"  />
                 </Grid>
             </TabItem>
             <TabItem Header="Додатково">
@@ -88,26 +92,26 @@
                     <TextBlock Text="Вхідний номер" />
                     <TextBlock Text="Відправник" Grid.Row="1"/>
                     <TextBlock Text="Одержувач" Grid.Row="2" />
-                    <TextBlock Text="Посада відпр." Grid.Row="3" TextWrapping="Wrap" />
-                    <TextBlock Text="Звання відпр." Grid.Row="4" TextWrapping="Wrap" />
-                    <TextBlock Text="Ім'я відпр." Grid.Row="5" TextWrapping="Wrap" />
-                    <TextBlock Text="Виконавець" Grid.Row="6" TextWrapping="Wrap" />
-                    <TextBlock Text="Тел. виконавця" Grid.Row="7" TextWrapping="Wrap" />
-                    <TextBlock Text="Передав" Grid.Row="8" TextWrapping="Wrap" />
-                    <TextBlock Text="Прийняв" Grid.Row="9" TextWrapping="Wrap" />
-                    <TextBlock Text="Час прийому" Grid.Row="10" TextWrapping="Wrap" />
+                    <TextBlock Text="Посада відпр." Grid.Row="3" />
+                    <TextBlock Text="Звання відпр." Grid.Row="4" />
+                    <TextBlock Text="Ім'я відпр." Grid.Row="5" />
+                    <TextBlock Text="Виконавець" Grid.Row="6" />
+                    <TextBlock Text="Тел. виконавця" Grid.Row="7" />
+                    <TextBlock Text="Передав" Grid.Row="8" />
+                    <TextBlock Text="Прийняв" Grid.Row="9" />
+                    <TextBlock Text="Час прийому" Grid.Row="10" />
 
-                    <TextBox Text="{Binding ActiveTelegram.IncNum, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, ValidatesOnDataErrors=True,NotifyOnValidationError=True}" Grid.Column="1" CharacterCasing="Upper" FontFamily="Courier New" MaxLines="1"/>
-                    <TextBox Text="{Binding ActiveTelegram.From, Mode=TwoWay, UpdateSourceTrigger=LostFocus, ValidatesOnDataErrors=True,NotifyOnValidationError=True}" Grid.Column="1" Grid.Row="1" CharacterCasing="Upper" FontFamily="Courier New" MaxLines="1" />
-                    <TextBox Text="{Binding ActiveTelegram.To, Mode=TwoWay, UpdateSourceTrigger=LostFocus, ValidatesOnDataErrors=True,NotifyOnValidationError=True}" Grid.Column="1" Grid.Row="2" CharacterCasing="Upper" FontFamily="Courier New" MaxLines="1" />
-                    <TextBox Text="{Binding ActiveTelegram.SenderPos, Mode=TwoWay, UpdateSourceTrigger=LostFocus, ValidatesOnDataErrors=True,NotifyOnValidationError=True}" Grid.Column="1" Grid.Row="3" CharacterCasing="Upper" FontFamily="Courier New" MaxLines="1" />
-                    <TextBox Text="{Binding ActiveTelegram.SenderRank, Mode=TwoWay, UpdateSourceTrigger=LostFocus, ValidatesOnDataErrors=True,NotifyOnValidationError=True}" Grid.Column="1" Grid.Row="4" CharacterCasing="Upper" FontFamily="Courier New" MaxLines="1" />
-                    <TextBox Text="{Binding ActiveTelegram.SenderName, Mode=TwoWay, UpdateSourceTrigger=LostFocus, ValidatesOnDataErrors=True,NotifyOnValidationError=True}" Grid.Column="1" Grid.Row="5" CharacterCasing="Upper" FontFamily="Courier New" MaxLines="1" />
-                    <TextBox Text="{Binding ActiveTelegram.Executor, Mode=TwoWay, UpdateSourceTrigger=LostFocus, ValidatesOnDataErrors=True,NotifyOnValidationError=True}" Grid.Column="1" Grid.Row="6" CharacterCasing="Upper" AutomationProperties.IsRequiredForForm="True" FontFamily="Courier New" MaxLines="1" />
-                    <TextBox Text="{Binding ActiveTelegram.Phone, Mode=TwoWay, UpdateSourceTrigger=LostFocus, ValidatesOnDataErrors=True,NotifyOnValidationError=True}" Grid.Column="1" Grid.Row="7" CharacterCasing="Upper" FontFamily="Courier New" MaxLines="1" />
-                    <TextBox Text="{Binding ActiveTelegram.HandedBy, Mode=TwoWay, UpdateSourceTrigger=LostFocus, ValidatesOnDataErrors=True,NotifyOnValidationError=True}" Grid.Column="1" Grid.Row="8" CharacterCasing="Upper" AutomationProperties.IsRequiredForForm="True" FontFamily="Courier New" MaxLines="1" />
-                    <TextBox Text="{Binding ActiveTelegram.Dispatcher, Mode=TwoWay, UpdateSourceTrigger=LostFocus, ValidatesOnDataErrors=True,NotifyOnValidationError=True}" Grid.Column="1" Grid.Row="9" CharacterCasing="Upper" AutomationProperties.IsRequiredForForm="True" FontFamily="Courier New" MaxLines="1" />
-                    <TextBox Text="{Binding ActiveTelegram.Time, Mode=TwoWay, UpdateSourceTrigger=LostFocus, ValidatesOnDataErrors=True,NotifyOnValidationError=True}" Grid.Column="1" Grid.Row="10" CharacterCasing="Upper" FontFamily="Courier New" MaxLines="1" />
+                    <TextBox Text="{Binding ActiveTelegram.IncNum, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, ValidatesOnDataErrors=True}" Grid.Column="1" />
+                    <TextBox Text="{Binding ActiveTelegram.From, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, ValidatesOnDataErrors=True}" Grid.Column="1" Grid.Row="1"  />
+                    <TextBox Text="{Binding ActiveTelegram.To, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, ValidatesOnDataErrors=True,NotifyOnValidationError=True}" Grid.Column="1" Grid.Row="2"  />
+                    <TextBox Text="{Binding ActiveTelegram.SenderPos, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, ValidatesOnDataErrors=True,NotifyOnValidationError=True}" Grid.Column="1" Grid.Row="3"  />
+                    <TextBox Text="{Binding ActiveTelegram.SenderRank, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, ValidatesOnDataErrors=True,NotifyOnValidationError=True}" Grid.Column="1" Grid.Row="4"  />
+                    <TextBox Text="{Binding ActiveTelegram.SenderName, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, ValidatesOnDataErrors=True,NotifyOnValidationError=True}" Grid.Column="1" Grid.Row="5"  />
+                    <TextBox Text="{Binding ActiveTelegram.Executor, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, ValidatesOnDataErrors=True,NotifyOnValidationError=True}" Grid.Column="1" Grid.Row="6" CharacterCasing="Upper" AutomationProperties.IsRequiredForForm="True" />
+                    <TextBox Text="{Binding ActiveTelegram.Phone, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, ValidatesOnDataErrors=True,NotifyOnValidationError=True}" Grid.Column="1" Grid.Row="7"  />
+                    <TextBox Text="{Binding ActiveTelegram.HandedBy, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, ValidatesOnDataErrors=True,NotifyOnValidationError=True}" Grid.Column="1" Grid.Row="8" CharacterCasing="Upper" AutomationProperties.IsRequiredForForm="True" />
+                    <TextBox Text="{Binding ActiveTelegram.Dispatcher, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, ValidatesOnDataErrors=True,NotifyOnValidationError=True}" Grid.Column="1" Grid.Row="9" CharacterCasing="Upper" AutomationProperties.IsRequiredForForm="True" />
+                    <TextBox Text="{Binding ActiveTelegram.Time, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, ValidatesOnDataErrors=True,NotifyOnValidationError=True}" Grid.Column="1" Grid.Row="10"  />
                 </Grid>
             </TabItem>
         </TabControl>

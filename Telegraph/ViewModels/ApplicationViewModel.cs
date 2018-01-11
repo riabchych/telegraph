@@ -94,7 +94,6 @@ namespace Telegraph.ViewModels
 
         public ApplicationViewModel()
         {
-            StatusText = "Відбувається завантаження даних. Будь ласка, зачекайте ...";
             dialogService = ServiceLocator.Current.GetInstance<IDialogService>();
             dataService = ServiceLocator.Current.GetInstance<ITelegramDataService>();
             logger = ServiceLocator.Current.GetInstance<ILogger>();
@@ -105,24 +104,30 @@ namespace Telegraph.ViewModels
 
         private async void LoadDataAsync()
         {
+            StatusText = "Відбувається завантаження даних. Будь ласка, зачекайте ...";
             IsBusy = true;
             Telegrams = await Task.Factory.StartNew(() => dataService.LoadTelegrams(), TaskCreationOptions.LongRunning);
             RefreshViewSource(Telegrams);
             IsBusy = false;
         }
+
         public void RefreshViewSource()
         {
             Refresh();
         }
 
-        private void RefreshViewSource(IEnumerable<Telegram> telegrams)
+        private void RefreshViewSource(ICollection<Telegram> telegrams)
         {
             Refresh(telegrams);
         }
 
-        private void Refresh(IEnumerable<Telegram> telegrams = null)
+        private void Refresh(ICollection<Telegram> telegrams = null)
         {
-            TelegramsViewSource.Dispatcher.Invoke((Action)(() => TelegramsViewSource.Source = new ObservableCollection<Telegram>(telegrams ?? Telegrams)));
+            TelegramsViewSource.Dispatcher.Invoke(() =>
+            {
+                TelegramsViewSource.Source = new ObservableCollection<Telegram>(telegrams ?? Telegrams);
+                StatusText = $"Всього телеграм: {Telegrams.Count}";
+            });
         }
 
         private void TelegramsFilter(object sender, FilterEventArgs e)
@@ -133,53 +138,53 @@ namespace Telegraph.ViewModels
                 return;
             }
 
-            string result = null;
+            object result = null;
 
             if (e.Item is Telegram tlg)
             {
                 switch (FilterType)
                 {
                     case 0:
-                        result = tlg.SelfNum.ToString();
+                        result = tlg.SelfNum;
                         break;
                     case 1:
-                        result = tlg.IncNum.ToString();
+                        result = tlg.IncNum;
                         break;
                     case 2:
-                        result = tlg.From.ToString();
+                        result = tlg.From;
                         break;
                     case 3:
-                        result = tlg.To.ToString();
+                        result = tlg.To;
                         break;
                     case 4:
-                        result = tlg.Text.ToString();
+                        result = tlg.Text;
                         break;
                     case 5:
-                        result = tlg.SubNum.ToString();
+                        result = tlg.SubNum;
                         break;
                     case 6:
-                        result = tlg.Date.ToString();
+                        result = tlg.Date;
                         break;
                     case 7:
-                        result = tlg.SenderPos.ToString();
+                        result = tlg.SenderPos;
                         break;
                     case 8:
-                        result = tlg.SenderRank.ToString();
+                        result = tlg.SenderRank;
                         break;
                     case 9:
-                        result = tlg.SenderName.ToString();
+                        result = tlg.SenderName;
                         break;
                     case 10:
-                        result = tlg.Executor.ToString();
+                        result = tlg.Executor;
                         break;
                     case 11:
-                        result = tlg.Phone.ToString();
+                        result = tlg.Phone;
                         break;
                     case 12:
-                        result = tlg.HandedBy.ToString();
+                        result = tlg.HandedBy;
                         break;
                     case 13:
-                        result = tlg.Dispatcher.ToString();
+                        result = tlg.Dispatcher;
                         break;
                     default:
                         result = null;
@@ -187,7 +192,7 @@ namespace Telegraph.ViewModels
                 }
             }
 
-            e.Accepted = result == null || result.ToUpper().Contains(FilterText.ToUpper());
+            e.Accepted = result == null || result.ToString().ToUpper().Contains(FilterText.ToUpper());
         }
 
         private void ShowError(string text)
@@ -201,13 +206,7 @@ namespace Telegraph.ViewModels
               MessageBoxImage.Error));
         }
 
-        public RelayCommand NewCommand
-        {
-            get
-            {
-                return newCommand ?? (newCommand = new RelayCommand((o) => OpenTlgWnd()));
-            }
-        }
+        public RelayCommand NewCommand => newCommand ?? (newCommand = new RelayCommand(o => OpenTlgWnd()));
 
         public RelayCommand SaveCommand
         {
@@ -251,23 +250,9 @@ namespace Telegraph.ViewModels
             }
         }
 
-        public RelayCommand CutCommand
-        {
-            get
-            {
-                return cutCommand ??
-                  (cutCommand = new RelayCommand((o) => CopySelectedTelegramsAsync(true)));
-            }
-        }
+        public RelayCommand CutCommand => cutCommand ?? (cutCommand = new RelayCommand((o) => CopySelectedTelegramsAsync(true)));
 
-        public RelayCommand CopyCommand
-        {
-            get
-            {
-                return copyCommand ??
-                  (copyCommand = new RelayCommand((o) => CopySelectedTelegramsAsync()));
-            }
-        }
+        public RelayCommand CopyCommand => copyCommand ?? (copyCommand = new RelayCommand((o) => CopySelectedTelegramsAsync()));
 
         private async void CopySelectedTelegramsAsync(bool removable = false)
         {
@@ -502,16 +487,13 @@ namespace Telegraph.ViewModels
                     {
                         ShowError($"Не вдалося отримати деяку інформацію, перевірте структуру документа \"{filePath}\".");
                     }
-                    else
-                    {
-                        dataService.AddTelegram(ActiveTelegram);
-                    }
+
                     bool? result = OpenTlgWnd(ActiveTelegram);
                     RefreshViewSource();
                     return result.Value;
                 }
             }
-            return true;
+            return false;
         }
 
         private Telegram HandleTelegrams(string filePath, bool isImport = false)

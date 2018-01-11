@@ -4,10 +4,8 @@ using Telegraph.CustomValidationAttributes;
 
 namespace Telegraph
 {
-
     public class Telegram : PropertyChangedNotification, ICloneable
     {
-
         public int Id { get; set; }
 
         [Unique(ErrorMessage = "Телеграма з даним ID вже існує")]
@@ -131,23 +129,23 @@ namespace Telegraph
         {
             return new Telegram
             {
-                Id = this.Id,
-                SelfNum = this.SelfNum,
-                IncNum = this.IncNum,
-                From = this.From,
-                To = this.To,
-                Text = this.Text,
-                SubNum = this.SubNum,
-                Date = this.Date,
-                SenderPos = this.SenderPos,
-                SenderRank = this.SenderRank,
-                SenderName = this.SenderName,
-                Executor = this.Executor,
-                Phone = this.Phone,
-                HandedBy = this.HandedBy,
-                Urgency = this.Urgency,
-                Dispatcher = this.Dispatcher,
-                Time = this.Time
+                Id = Id,
+                SelfNum = SelfNum,
+                IncNum = IncNum,
+                From = From,
+                To = To,
+                Text = Text,
+                SubNum = SubNum,
+                Date = Date,
+                SenderPos = SenderPos,
+                SenderRank = SenderRank,
+                SenderName = SenderName,
+                Executor = Executor,
+                Phone = Phone,
+                HandedBy = HandedBy,
+                Urgency = Urgency,
+                Dispatcher = Dispatcher,
+                Time = Time
             };
         }
     }
